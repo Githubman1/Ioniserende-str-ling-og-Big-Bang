@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul 4: Klima og klimaendringer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a1a0a 0%, #1a2a1a 50%, #0d1f1a 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        
+        .topnav {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .topnav a { color: #888; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .topnav a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .nav-title { color: #44cc88; font-weight: bold; font-size: 1.1rem; }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            padding: 20px 30px;
+            background: rgba(0,0,0,0.2);
+            overflow-x: auto;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .tab {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-radius: 10px;
+            color: #888;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .tab:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .tab.active { background: #44cc88; color: #000; }
+        
+        .content { padding: 30px; max-width: 1000px; margin: 0 auto; }
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        h1 { font-size: 2rem; margin-bottom: 20px; color: #44cc88; }
+        h2 { font-size: 1.5rem; margin: 30px 0 15px; color: #66dd99; }
+        h3 { font-size: 1.2rem; margin: 25px 0 12px; color: #88eeaa; }
+        p { line-height: 1.8; margin-bottom: 15px; }
+        ul, ol { margin: 15px 0 15px 25px; line-height: 2; }
+        
+        .box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .box-highlight { border-left: 4px solid #44cc88; background: rgba(68,204,136,0.1); }
+        .box-warning { border-left: 4px solid #ff4444; background: rgba(255,68,68,0.1); }
+        .box-info { border-left: 4px solid #00aaff; background: rgba(0,170,255,0.1); }
+        .box-success { border-left: 4px solid #88ff88; background: rgba(136,255,136,0.1); }
+        
+        .simulator {
+            background: #0a140a;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid rgba(68,204,136,0.3);
+        }
+        .sim-title { color: #44cc88; font-size: 1.1rem; margin-bottom: 20px; }
+        canvas { border-radius: 10px; display: block; margin: 15px 0; }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary { background: #44cc88; color: #000; }
+        .btn-primary:hover { background: #66dd99; }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(255,255,255,0.05); color: #44cc88; }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #333;
+            -webkit-appearance: none;
+            margin: 15px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #44cc88;
+            cursor: pointer;
+        }
+        
+        .value-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .value-item {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .value-number { font-size: 2rem; font-weight: bold; }
+        .value-label { color: #888; font-size: 0.85rem; margin-top: 5px; }
+        
+        /* Consequence cards */
+        .consequence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        .consequence-card {
+            background: rgba(255,68,68,0.1);
+            border: 2px solid rgba(255,68,68,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .consequence-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .consequence-title { color: #ff8888; font-weight: bold; margin-bottom: 8px; }
+        .consequence-desc { color: #aaa; font-size: 0.85rem; }
+        
+        /* Action cards */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .action-card {
+            background: rgba(68,204,136,0.1);
+            border: 2px solid rgba(68,204,136,0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .action-icon { font-size: 2rem; margin-bottom: 10px; }
+        .action-title { color: #88ffaa; font-weight: bold; margin-bottom: 8px; }
+        .action-desc { color: #aaa; font-size: 0.9rem; }
+        
+        /* Flashcards */
+        .flashcard-container { perspective: 1000px; margin: 30px 0; }
+        .flashcard {
+            width: 100%;
+            height: 250px;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .flashcard.flipped { transform: rotateY(180deg); }
+        .flash-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+        }
+        .flash-front { background: linear-gradient(135deg, #1a2a1a, #2a3a2a); border: 2px solid rgba(68,204,136,0.3); }
+        .flash-back { background: linear-gradient(135deg, #143028, #254038); border: 2px solid rgba(136,255,136,0.3); transform: rotateY(180deg); }
+        .flash-label { font-size: 0.8rem; color: #888; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .flash-text { font-size: 1.3rem; line-height: 1.6; }
+        .flash-hint { font-size: 0.8rem; color: #666; margin-top: 20px; }
+        .flash-controls { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .flash-btn { padding: 12px 25px; border: none; border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; }
+        .flash-btn:hover { background: #44cc88; color: #000; }
+        .flash-counter { text-align: center; color: #888; margin-bottom: 15px; }
+        
+        /* Quiz */
+        .quiz-question { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 25px; margin: 20px 0; }
+        .quiz-question.correct { border-color: #44cc88; background: rgba(68,204,136,0.1); }
+        .quiz-question.wrong { border-color: #ff4444; background: rgba(255,68,68,0.1); }
+        .quiz-text { font-size: 1.1rem; margin-bottom: 20px; }
+        .quiz-options { display: grid; gap: 10px; }
+        .quiz-option { padding: 15px 20px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; transition: all 0.3s; }
+        .quiz-option:hover { border-color: #44cc88; background: rgba(68,204,136,0.1); }
+        .quiz-option.selected { border-color: #00ffff; background: rgba(0,255,255,0.1); }
+        .quiz-option.correct-answer { border-color: #44cc88; background: rgba(68,204,136,0.2); }
+        .quiz-option.wrong-answer { border-color: #ff4444; background: rgba(255,68,68,0.2); }
+        
+        .quiz-result { text-align: center; padding: 30px; background: rgba(255,255,255,0.05); border-radius: 15px; margin: 30px 0; }
+        .quiz-score { font-size: 3rem; font-weight: bold; }
+        .quiz-score.good { color: #44cc88; }
+        .quiz-score.medium { color: #ffaa00; }
+        .quiz-score.bad { color: #ff4444; }
+        
+        @media (max-width: 600px) {
+            .tabs { padding: 15px; }
+            .tab { padding: 10px 15px; font-size: 0.8rem; }
+            .content { padding: 20px 15px; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="topnav">
+        <a href="index.html">← Tilbake til oversikt</a>
+        <span class="nav-title">🌍 Modul 4: Klima</span>
+        <span id="progressLabel">0%</span>
+    </nav>
+    
+    <div class="tabs">
+        <button class="tab active" onclick="showSection(0)">📖 Introduksjon</button>
+        <button class="tab" onclick="showSection(1)">🌡️ Drivhuseffekten</button>
+        <button class="tab" onclick="showSection(2)">💨 Drivhusgasser</button>
+        <button class="tab" onclick="showSection(3)">🔬 CO₂-simulator</button>
+        <button class="tab" onclick="showSection(4)">⚠️ Konsekvenser</button>
+        <button class="tab" onclick="showSection(5)">💚 Tiltak</button>
+        <button class="tab" onclick="showSection(6)">🇳🇴 Norge</button>
+        <button class="tab" onclick="showSection(7)">🃏 Flashcards</button>
+        <button class="tab" onclick="showSection(8)">❓ Quiz</button>
+        <button class="tab" onclick="showSection(9)">📝 Oppgaver</button>
+    </div>
+    
+    <div class="content">
+        <!-- SEKSJON 0: INTRODUKSJON -->
+        <div class="section active" id="sec0">
+            <h1>🌍 Klima og klimaendringer</h1>
+            
+            <div class="box box-highlight">
+                <h3>🎯 Læringsmål</h3>
+                <ul>
+                    <li>Forklare forskjellen på vær og klima</li>
+                    <li>Beskrive drivhuseffekten og hvordan den forsterkes</li>
+                    <li>Kjenne til de viktigste drivhusgassene og deres kilder</li>
+                    <li>Forstå konsekvensene av klimaendringer</li>
+                    <li>Beskrive tiltak på samfunns- og individnivå</li>
+                </ul>
+            </div>
+            
+            <h2>Vær vs. Klima</h2>
+            <div class="box">
+                <table>
+                    <tr>
+                        <th>Vær</th>
+                        <th>Klima</th>
+                    </tr>
+                    <tr>
+                        <td>Tilstanden i atmosfæren akkurat nå</td>
+                        <td>Gjennomsnittlig vær over 30+ år</td>
+                    </tr>
+                    <tr>
+                        <td>"I dag er det 15°C og regn"</td>
+                        <td>"Bergen har mye nedbør"</td>
+                    </tr>
+                    <tr>
+                        <td>Endrer seg fra time til time</td>
+                        <td>Endrer seg over tiår</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <h2>Klimaendringer - hva skjer?</h2>
+            <p>
+                Jordens gjennomsnittstemperatur har økt med ca. <strong>1.1°C</strong> siden førindustriell tid (1850-1900).
+                Dette høres kanskje lite ut, men det har store konsekvenser for klimasystemet.
+            </p>
+            
+            <div class="box box-warning">
+                <h3>⚠️ Vitenskapelig konsensus</h3>
+                <p>
+                    <strong>97% av klimaforskere</strong> er enige: Klimaendringene er reelle, og de er hovedsakelig 
+                    forårsaket av <strong>menneskelig aktivitet</strong> - spesielt forbrenning av fossilt brensel.
+                </p>
+            </div>
+            
+            <h2>Nøkkeltall</h2>
+            <div class="value-display">
+                <div class="value-item">
+                    <div class="value-number" style="color: #ff4444;">+1.1°C</div>
+                    <div class="value-label">Oppvarming siden 1850</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-number" style="color: #ff9900;">420 ppm</div>
+                    <div class="value-label">CO₂ i dag (+50%)</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-number" style="color: #00aaff;">+20 cm</div>
+                    <div class="value-label">Havstigning siden 1900</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" onclick="showSection(1)">Neste: Drivhuseffekten →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 1: DRIVHUSEFFEKTEN -->
+        <div class="section" id="sec1">
+            <h1>🌡️ Drivhuseffekten</h1>
+            
+            <div class="box box-info">
+                <h3>Hva er drivhuseffekten?</h3>
+                <p>
+                    Drivhuseffekten er en naturlig prosess der visse gasser i atmosfæren 
+                    fanger opp varmestråling fra jorden og sender noe av den tilbake. 
+                    Dette holder jorden varm nok for liv.
+                </p>
+            </div>
+            
+            <div class="simulator">
+                <div class="sim-title">☀️ Drivhuseffekten visualisert</div>
+                <canvas id="greenhouseCanvas" width="800" height="350" style="width: 100%; background: linear-gradient(180deg, #001133 0%, #4488cc 50%, #228844 85%, #115522 100%);"></canvas>
+            </div>
+            
+            <h2>Slik fungerer det (steg for steg)</h2>
+            <ol>
+                <li><strong>☀️ Sollys treffer jorden:</strong> Kortbølget stråling (synlig lys) passerer gjennom atmosfæren</li>
+                <li><strong>🌍 Jorden absorberer energi:</strong> Overflaten varmes opp</li>
+                <li><strong>🔥 Jorden sender ut varmestråling:</strong> Langbølget infrarød (IR) stråling</li>
+                <li><strong>💨 Drivhusgasser absorberer IR:</strong> CO₂, metan, vanndamp fanger opp strålingen</li>
+                <li><strong>🔄 Varme sendes tilbake:</strong> Noe av varmen stråles tilbake mot jorden</li>
+                <li><strong>🌡️ Jorden holdes varm:</strong> Gjennomsnittstemperatur ca. +15°C</li>
+            </ol>
+            
+            <div class="box box-success">
+                <h3>✓ Den naturlige drivhuseffekten er livsviktig!</h3>
+                <p>
+                    Uten drivhuseffekt ville jordens gjennomsnittstemperatur vært ca. <strong>−18°C</strong> 
+                    i stedet for <strong>+15°C</strong>. Jorden ville vært en frossen isklump!
+                </p>
+            </div>
+            
+            <h2>Problemet: Forsterket drivhuseffekt</h2>
+            <div class="box box-warning">
+                <p>
+                    Når vi slipper ut mer CO₂ og andre drivhusgasser, forsterkes drivhuseffekten.
+                    Mer varme fanges, og jorden blir varmere. Dette er <strong>global oppvarming</strong>.
+                </p>
+                <table style="margin-top: 15px;">
+                    <tr>
+                        <td>CO₂ før industrien (1800)</td>
+                        <td style="color: #44cc88;">280 ppm</td>
+                    </tr>
+                    <tr>
+                        <td>CO₂ i dag (2024)</td>
+                        <td style="color: #ff4444;">420 ppm (+50%!)</td>
+                    </tr>
+                    <tr>
+                        <td>Høyeste på</td>
+                        <td style="color: #ff4444;">800 000 år</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(0)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(2)">Neste: Drivhusgasser →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 2: DRIVHUSGASSER -->
+        <div class="section" id="sec2">
+            <h1>💨 Drivhusgassene</h1>
+            
+            <h2>De viktigste drivhusgassene</h2>
+            
+            <div class="box" style="border-left: 4px solid #888;">
+                <h3 style="color: #aaa;">💧 Vanndamp (H₂O)</h3>
+                <p>Den viktigste naturlige drivhusgassen. Mengden styres av temperatur (varmere → mer fordampning).</p>
+                <p style="color: #888;">Mennesker påvirker ikke direkte, men indirekte gjennom oppvarming.</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #ff4444;">
+                <h3 style="color: #ff6666;">🏭 Karbondioksid (CO₂)</h3>
+                <p><strong>Den viktigste menneskeskapte drivhusgassen.</strong></p>
+                <ul>
+                    <li>Før industrien: 280 ppm → I dag: <strong>420 ppm (+50%)</strong></li>
+                    <li>Høyeste nivå på <strong>800 000 år</strong></li>
+                    <li>Levetid i atmosfæren: <strong>Hundrevis av år</strong></li>
+                </ul>
+                <h4 style="margin-top: 15px;">Kilder til CO₂:</h4>
+                <ul>
+                    <li>🚗 Transport (biler, fly, skip)</li>
+                    <li>🏭 Industri og fabrikker</li>
+                    <li>⚡ Kraftproduksjon (kull, gass, olje)</li>
+                    <li>🏠 Oppvarming av bygninger</li>
+                    <li>🌳 Avskoging (trær lagrer CO₂)</li>
+                    <li>🏗️ Sementproduksjon</li>
+                </ul>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #ff9900;">
+                <h3 style="color: #ffaa33;">🐄 Metan (CH₄)</h3>
+                <p><strong>80× sterkere drivhusgass enn CO₂</strong> (over 20 år), men kortere levetid (~12 år).</p>
+                <ul>
+                    <li>Økt med <strong>150%</strong> siden førindustriell tid</li>
+                </ul>
+                <h4 style="margin-top: 15px;">Kilder til metan:</h4>
+                <ul>
+                    <li>🐄 Husdyr (kyr, sauer - fordøyelse)</li>
+                    <li>🌾 Rismarker (våte forhold)</li>
+                    <li>🗑️ Søppelfyllinger</li>
+                    <li>⛽ Gasslekkasjer (olje/gass-industri)</li>
+                    <li>❄️ Tinende permafrost</li>
+                </ul>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #aa44ff;">
+                <h3 style="color: #bb66ff;">🌿 Lystgass (N₂O)</h3>
+                <p><strong>300× sterkere</strong> enn CO₂. Levetid: ~120 år.</p>
+                <ul>
+                    <li>Kilder: Landbruk (gjødsel), industri, forbrenning</li>
+                </ul>
+            </div>
+            
+            <h2>Sammenligning av drivhusgasser</h2>
+            <div class="box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Gass</th>
+                            <th>GWP*</th>
+                            <th>Levetid</th>
+                            <th>Hovedkilde</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CO₂</td>
+                            <td>1</td>
+                            <td>100+ år</td>
+                            <td>Fossilt brensel</td>
+                        </tr>
+                        <tr>
+                            <td>CH₄ (metan)</td>
+                            <td style="color: #ff9900;">80</td>
+                            <td>12 år</td>
+                            <td>Husdyr, gass</td>
+                        </tr>
+                        <tr>
+                            <td>N₂O (lystgass)</td>
+                            <td style="color: #ff4444;">300</td>
+                            <td>120 år</td>
+                            <td>Landbruk</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="color: #888; font-size: 0.85rem;">*GWP = Global Warming Potential (sammenlignet med CO₂ over 100 år)</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(1)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(3)">Neste: CO₂-simulator →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 3: CO2-SIMULATOR -->
+        <div class="section" id="sec3">
+            <h1>🔬 Interaktiv CO₂-simulator</h1>
+            
+            <p>Utforsk sammenhengen mellom CO₂-nivå og global temperatur. Dra i slideren for å se hvordan temperaturen endrer seg!</p>
+            
+            <div class="simulator">
+                <div class="sim-title">🌡️ CO₂ og temperatur</div>
+                
+                <p style="margin-bottom: 10px;">CO₂-nivå: <strong id="co2Val">400</strong> ppm</p>
+                <input type="range" id="co2Slider" min="200" max="800" value="400" oninput="updateCO2()">
+                
+                <div class="value-display">
+                    <div class="value-item">
+                        <div class="value-number" id="co2Display" style="color: #00ffff;">400</div>
+                        <div class="value-label">CO₂ (ppm)</div>
+                    </div>
+                    <div class="value-item">
+                        <div class="value-number" id="tempDisplay" style="color: #44cc88;">15.0</div>
+                        <div class="value-label">Global temp (°C)</div>
+                    </div>
+                    <div class="value-item">
+                        <div class="value-number" id="periodDisplay" style="color: #888;">I dag</div>
+                        <div class="value-label">Tidsperiode</div>
+                    </div>
+                </div>
+                
+                <canvas id="co2Canvas" width="800" height="200" style="width: 100%; background: #050a05; margin-top: 20px;"></canvas>
+                
+                <div id="warningBox" style="display: none; background: rgba(255,68,68,0.2); border: 2px solid #ff4444; border-radius: 10px; padding: 15px; margin-top: 20px; text-align: center;">
+                    <p style="color: #ff4444; margin: 0;"><strong>⚠️ ADVARSEL:</strong> Dette nivået kan gi katastrofale klimaendringer!</p>
+                </div>
+            </div>
+            
+            <h2>Historiske CO₂-nivåer</h2>
+            <div class="box">
+                <table>
+                    <tr>
+                        <td>Istider (siste 800 000 år)</td>
+                        <td style="color: #4488ff;">180-200 ppm</td>
+                    </tr>
+                    <tr>
+                        <td>Mellomistider</td>
+                        <td style="color: #44cc88;">280 ppm</td>
+                    </tr>
+                    <tr>
+                        <td>Førindustriell tid (1800)</td>
+                        <td style="color: #44cc88;">280 ppm</td>
+                    </tr>
+                    <tr>
+                        <td>1950</td>
+                        <td style="color: #ffaa00;">310 ppm</td>
+                    </tr>
+                    <tr>
+                        <td>2000</td>
+                        <td style="color: #ff9900;">370 ppm</td>
+                    </tr>
+                    <tr>
+                        <td>I dag (2024)</td>
+                        <td style="color: #ff4444;">420 ppm</td>
+                    </tr>
+                    <tr>
+                        <td>Paris-målet (2°C)</td>
+                        <td style="color: #ff4444;">~450 ppm maks</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="box box-warning">
+                <h3>📈 Viktig innsikt</h3>
+                <p>
+                    CO₂-nivået har aldri vært over 300 ppm de siste 800 000 årene - 
+                    før nå. Vi er i ukjent territorium. Endringene skjer også mye raskere 
+                    enn noen gang før i jordens historie.
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(2)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(4)">Neste: Konsekvenser →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 4: KONSEKVENSER -->
+        <div class="section" id="sec4">
+            <h1>⚠️ Konsekvenser av klimaendringer</h1>
+            
+            <p>Klimaendringene påvirker hele planeten. Her er de viktigste konsekvensene:</p>
+            
+            <div class="consequence-grid">
+                <div class="consequence-card">
+                    <div class="consequence-icon">🌊</div>
+                    <div class="consequence-title">Havstigning</div>
+                    <div class="consequence-desc">Issmelting og varmere hav → 0.5-1 m innen 2100. Truer kystbyer.</div>
+                </div>
+                <div class="consequence-card">
+                    <div class="consequence-icon">🌪️</div>
+                    <div class="consequence-title">Ekstremvær</div>
+                    <div class="consequence-desc">Flere og kraftigere stormer, orkaner, flommer og hetebølger.</div>
+                </div>
+                <div class="consequence-card">
+                    <div class="consequence-icon">🧊</div>
+                    <div class="consequence-title">Issmelting</div>
+                    <div class="consequence-desc">Arktis, Antarktis og isbreer smelter. Isbjørner mister habitat.</div>
+                </div>
+                <div class="consequence-card">
+                    <div class="consequence-icon">🦁</div>
+                    <div class="consequence-title">Artsutryddelse</div>
+                    <div class="consequence-desc">Arter kan ikke tilpasse seg raskt nok. 1 million arter truet.</div>
+                </div>
+                <div class="consequence-card">
+                    <div class="consequence-icon">🐚</div>
+                    <div class="consequence-title">Havforsuring</div>
+                    <div class="consequence-desc">CO₂ løses i havet → surere hav → korallrev og skalldyr dør.</div>
+                </div>
+                <div class="consequence-card">
+                    <div class="consequence-icon">🌾</div>
+                    <div class="consequence-title">Matproduksjon</div>
+                    <div class="consequence-desc">Tørke, flom og nye skadedyr truer avlinger. Matmangel.</div>
+                </div>
+                <div class="consequence-card">
+                    <div class="consequence-icon">💧</div>
+                    <div class="consequence-title">Vannmangel</div>
+                    <div class="consequence-desc">Endrede nedbørsmønstre og isbreesmelting. Vannkrise for milliarder.</div>
+                </div>
+                <div class="consequence-card">
+                    <div class="consequence-icon">🦟</div>
+                    <div class="consequence-title">Sykdommer</div>
+                    <div class="consequence-desc">Varmere klima → malaria, dengue og andre sykdommer sprer seg.</div>
+                </div>
+                <div class="consequence-card">
+                    <div class="consequence-icon">👥</div>
+                    <div class="consequence-title">Klimaflyktninger</div>
+                    <div class="consequence-desc">200 millioner kan bli tvunget til å flytte innen 2050.</div>
+                </div>
+            </div>
+            
+            <h2>Vippepunkter - "points of no return"</h2>
+            <div class="box box-warning">
+                <p>
+                    <strong>Vippepunkter</strong> er terskler der klimasystemet kan endre seg brått og irreversibelt.
+                    Når vi passerer dem, kan vi ikke gå tilbake.
+                </p>
+                <ul>
+                    <li><strong>Issmelting på Grønland:</strong> Kan gi 7 meter havstigning over tid</li>
+                    <li><strong>Amazonas:</strong> Kan gå fra regnskog til savanne</li>
+                    <li><strong>Permafrost:</strong> Frigjør enorme mengder metan</li>
+                    <li><strong>Korallrev:</strong> Kan dø ut ved 1.5-2°C oppvarming</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(3)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(5)">Neste: Tiltak →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 5: TILTAK -->
+        <div class="section" id="sec5">
+            <h1>💚 Klimatiltak</h1>
+            
+            <h2>Tiltak på samfunnsnivå</h2>
+            <div class="action-grid">
+                <div class="action-card">
+                    <div class="action-icon">⚡</div>
+                    <div class="action-title">Fornybar energi</div>
+                    <div class="action-desc">Sol, vind, vann, geotermisk. Erstatte kull, olje og gass.</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">🚗</div>
+                    <div class="action-title">Elektrifisering</div>
+                    <div class="action-desc">Elbiler, elektriske busser og tog. Ladeinfrastruktur.</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">🌳</div>
+                    <div class="action-title">Skogbevaring</div>
+                    <div class="action-desc">Stoppe avskoging. Plante nye trær. Skog lagrer karbon.</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">🏭</div>
+                    <div class="action-title">Karbonfangst</div>
+                    <div class="action-desc">Fange CO₂ fra industri og lagre det under bakken.</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">🏠</div>
+                    <div class="action-title">Energieffektivisering</div>
+                    <div class="action-desc">Bedre isolasjon, LED-lys, effektive apparater.</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">🌾</div>
+                    <div class="action-title">Bærekraftig landbruk</div>
+                    <div class="action-desc">Mindre metan fra husdyr. Bedre gjødselhåndtering.</div>
+                </div>
+            </div>
+            
+            <h2>Tiltak du kan gjøre</h2>
+            <div class="action-grid">
+                <div class="action-card">
+                    <div class="action-icon">🚲</div>
+                    <div class="action-title">Sykle og gå</div>
+                    <div class="action-desc">Kortere turer uten bil. Bra for helse og klima!</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">✈️</div>
+                    <div class="action-title">Fly mindre</div>
+                    <div class="action-desc">Flyreiser har stort klimaavtrykk. Velg tog når mulig.</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">🥗</div>
+                    <div class="action-title">Spis mindre kjøtt</div>
+                    <div class="action-desc">Kjøttproduksjon (spesielt storfe) gir store utslipp.</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">💡</div>
+                    <div class="action-title">Spar energi</div>
+                    <div class="action-desc">Slå av lys, senk temperaturen, korte dusjer.</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">♻️</div>
+                    <div class="action-title">Reduser, gjenbruk, resirkuler</div>
+                    <div class="action-desc">Mindre forbruk = mindre utslipp. Reparer i stedet for å kaste.</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">🗳️</div>
+                    <div class="action-title">Stem for klimaet</div>
+                    <div class="action-desc">Støtt politikere som tar klimaet på alvor.</div>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">💬</div>
+                    <div class="action-title">Snakk om klima</div>
+                    <div class="action-desc">Spre kunnskap. Engasjer venner og familie.</div>
+                </div>
+            </div>
+            
+            <div class="box box-success">
+                <h3>💪 Det nytter!</h3>
+                <p>
+                    Mange tenker "hva kan én person gjøre?". Men millioner av individuelle valg 
+                    utgjør en stor forskjell. Dessuten: dine valg påvirker andre, og skaper press 
+                    for at bedrifter og politikere skal handle.
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(4)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(6)">Neste: Norge →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 6: NORGE -->
+        <div class="section" id="sec6">
+            <h1>🇳🇴 Norge og klimaendringer</h1>
+            
+            <h2>Hvordan påvirkes Norge?</h2>
+            <div class="box">
+                <ul>
+                    <li><strong>🌧️ Mer nedbør:</strong> Spesielt på Vestlandet og i Nord-Norge. Flere flommer og skred.</li>
+                    <li><strong>🌡️ Varmere:</strong> Spesielt i Arktis. Mindre snø, kortere vintre.</li>
+                    <li><strong>🏔️ Isbreer smelter:</strong> Norske isbreer krymper raskt. Jostedalsbreen mister masse.</li>
+                    <li><strong>🐟 Fisken flytter nordover:</strong> Varmere hav endrer fiskebestander.</li>
+                    <li><strong>🌲 Lengre vekstsesong:</strong> Men også nye skadedyr og sykdommer.</li>
+                </ul>
+            </div>
+            
+            <h2>Norges utslipp og rolle</h2>
+            <div class="box box-info">
+                <ul>
+                    <li>Norge slipper ut ca. <strong>50 millioner tonn CO₂-ekvivalenter</strong> per år</li>
+                    <li><strong>Olje- og gassproduksjon</strong> er vår største utslippskilde (eksport ikke inkludert)</li>
+                    <li>Vi har <strong>nesten 100% fornybar elektrisitet</strong> (vannkraft)</li>
+                    <li>Norge er <strong>verdensledende på elbiler</strong> (80%+ av nye biler)</li>
+                    <li>Vi eksporterer olje og gass som gir <strong>10× mer utslipp</strong> i andre land</li>
+                </ul>
+            </div>
+            
+            <h2>Norges klimamål</h2>
+            <div class="value-display">
+                <div class="value-item" style="border: 2px solid #ffaa00;">
+                    <div class="value-number" style="color: #ffaa00;">55%</div>
+                    <div class="value-label">Utslippskutt innen 2030</div>
+                </div>
+                <div class="value-item" style="border: 2px solid #44cc88;">
+                    <div class="value-number" style="color: #44cc88;">2050</div>
+                    <div class="value-label">Klimanøytral</div>
+                </div>
+            </div>
+            
+            <h2>Utfordringer for Norge</h2>
+            <div class="box box-warning">
+                <ul>
+                    <li>Hvordan fase ut olje- og gassproduksjon uten å miste arbeidsplasser?</li>
+                    <li>Hvordan kutte utslipp fra transport, industri og landbruk?</li>
+                    <li>Bør vi ta ansvar for utslippene fra oljen/gassen vi eksporterer?</li>
+                    <li>Hvordan balansere naturvern med vindkraft og gruvedrift for batterimateriell?</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(5)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(7)">Neste: Flashcards →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 7: FLASHCARDS -->
+        <div class="section" id="sec7">
+            <h1>🃏 Flashcards</h1>
+            
+            <div class="flash-counter" id="flashCounter">Kort 1 av 15</div>
+            
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard" onclick="flipCard()">
+                    <div class="flash-face flash-front">
+                        <div class="flash-label">Spørsmål</div>
+                        <div class="flash-text" id="flashQ">Laster...</div>
+                        <div class="flash-hint">Klikk for å se svaret</div>
+                    </div>
+                    <div class="flash-face flash-back">
+                        <div class="flash-label">Svar</div>
+                        <div class="flash-text" id="flashA">Laster...</div>
+                        <div class="flash-hint">Klikk for å gå tilbake</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flash-controls">
+                <button class="flash-btn" onclick="prevCard()">← Forrige</button>
+                <button class="flash-btn" onclick="shuffleCards()">🔀 Tilfeldig</button>
+                <button class="flash-btn" onclick="nextCard()">Neste →</button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(6)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(8)">Neste: Quiz →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 8: QUIZ -->
+        <div class="section" id="sec8">
+            <h1>❓ Quiz</h1>
+            
+            <div id="quizContainer"></div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" id="checkBtn" onclick="checkQuiz()">Sjekk svarene</button>
+                <button class="btn btn-secondary" id="retryBtn" onclick="resetQuiz()" style="display: none;">Prøv igjen</button>
+            </div>
+            
+            <div class="quiz-result" id="resultBox" style="display: none;">
+                <p>Du fikk:</p>
+                <div class="quiz-score" id="resultScore">0/12</div>
+                <p id="resultMsg"></p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(7)">← Tilbake</button>
+                <button class="btn btn-primary" onclick="showSection(9)">Neste: Oppgaver →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 9: SKRIVEOPPGAVER -->
+        <div class="section" id="sec9">
+            <h1>📝 Skriveoppgaver</h1>
+            <p>Svar på oppgavene under. Svarene lagres automatisk.</p>
+            
+            <div class="box">
+                <h3>Oppgave 1: Drivhuseffekten</h3>
+                <p>Forklar drivhuseffekten steg for steg. Hva er forskjellen på den naturlige drivhuseffekten og den forsterkede (menneskeskapte)?</p>
+                <textarea id="oppg1" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 2: Drivhusgasser</h3>
+                <p>Beskriv de tre viktigste menneskeskapte drivhusgassene (CO₂, metan, lystgass). For hver gass: hva er hovedkildene, hvor sterk er den som drivhusgass, og hva er levetiden i atmosfæren?</p>
+                <textarea id="oppg2" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 3: Konsekvenser av klimaendringer</h3>
+                <p>Beskriv minst 5 konsekvenser av klimaendringer. For hver konsekvens, forklar hvordan den henger sammen med global oppvarming.</p>
+                <textarea id="oppg3" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 4: Klimatiltak</h3>
+                <p>Beskriv 3 klimatiltak på samfunnsnivå og 3 tiltak du kan gjøre selv. Forklar hvordan hvert tiltak reduserer utslipp eller begrenser klimaendringer.</p>
+                <textarea id="oppg4" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 5: Norge og klimaendringer</h3>
+                <p>Hvordan påvirkes Norge av klimaendringer? Hva er Norges rolle i klimaproblemet (både utslipp og olje/gasseksport)? Hva er Norges klimamål?</p>
+                <textarea id="oppg5" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 6: Vippepunkter og fremtiden</h3>
+                <p>Forklar hva vippepunkter er og gi eksempler. Hvorfor er det viktig å begrense oppvarmingen til 1.5-2°C? Hva tror du om fremtiden?</p>
+                <textarea id="oppg6" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="downloadAnswers()">📥 Last ned svar</button>
+                <a href="index.html" class="btn btn-primary" style="display: inline-block; text-decoration: none; margin-left: 15px;">✓ Fullfør modul</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // === NAVIGATION ===
+        let currentSection = 0;
+        function showSection(idx) {
+            document.querySelectorAll('.section').forEach((s, i) => s.classList.toggle('active', i === idx));
+            document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+            currentSection = idx;
+            document.getElementById('progressLabel').textContent = Math.round((idx / 8) * 100) + '%';
+            window.scrollTo(0, 0);
+            
+            if (idx === 1) initGreenhouse();
+            if (idx === 3) initCO2Sim();
+        }
+        
+        let tick = 0;
+        
+        // === GREENHOUSE SIMULATION ===
+        let greenhouseAnim;
+        function initGreenhouse() {
+            const canvas = document.getElementById('greenhouseCanvas');
+            if (!canvas) return;
+            drawGreenhouse();
+        }
+        
+        function drawGreenhouse() {
+            const canvas = document.getElementById('greenhouseCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            
+            // Clear
+            ctx.clearRect(0, 0, W, H);
+            
+            // Sun
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(100, 60, 40, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('☀️', 100, 65);
+            
+            // Incoming solar radiation
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 5]);
+            for (let i = 0; i < 5; i++) {
+                const x = 150 + i * 50 + (tick % 30);
+                ctx.beginPath();
+                ctx.moveTo(x, 50);
+                ctx.lineTo(x + 80, 200);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+            
+            // Ground
+            ctx.fillStyle = '#228844';
+            ctx.fillRect(0, H - 60, W, 60);
+            
+            // Earth surface heating up
+            ctx.fillStyle = '#ff8844';
+            for (let i = 0; i < 8; i++) {
+                const x = 100 + i * 90;
+                const bounce = Math.sin(tick * 0.1 + i) * 5;
+                ctx.beginPath();
+                ctx.arc(x, H - 70 + bounce, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Outgoing IR radiation (from ground up)
+            ctx.strokeStyle = '#ff4444';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 6; i++) {
+                const x = 120 + i * 100;
+                const y = H - 80 - (tick * 2 + i * 20) % 100;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + 10, y - 20);
+                ctx.lineTo(x + 20, y);
+                ctx.stroke();
+            }
+            
+            // Greenhouse gas layer
+            ctx.fillStyle = 'rgba(100, 150, 255, 0.2)';
+            ctx.fillRect(0, 100, W, 80);
+            ctx.fillStyle = '#aaccff';
+            ctx.font = '14px sans-serif';
+            ctx.fillText('💨 Drivhusgasser (CO₂, CH₄, H₂O)', W/2, 145);
+            
+            // Re-emitted radiation (back to ground)
+            ctx.strokeStyle = '#ff8800';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 4; i++) {
+                const x = 200 + i * 120;
+                const y = 170 + (tick * 1.5 + i * 15) % 80;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x - 10, y + 20);
+                ctx.lineTo(x, y + 40);
+                ctx.stroke();
+            }
+            
+            // Labels
+            ctx.fillStyle = '#ffff00';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('1. Sollys inn', 50, 100);
+            
+            ctx.fillStyle = '#ff4444';
+            ctx.fillText('2. Jorden sender ut IR', 50, 220);
+            
+            ctx.fillStyle = '#ff8800';
+            ctx.fillText('3. Varme tilbake', 600, 220);
+            
+            tick++;
+            greenhouseAnim = requestAnimationFrame(drawGreenhouse);
+        }
+        
+        // === CO2 SIMULATOR ===
+        function initCO2Sim() {
+            updateCO2();
+            drawCO2Graph();
+        }
+        
+        function updateCO2() {
+            const co2 = parseInt(document.getElementById('co2Slider').value);
+            const temp = 14 + (co2 - 280) * 0.008;
+            
+            let period = 'I dag';
+            if (co2 < 250) period = 'Istid';
+            else if (co2 < 290) period = 'Førindustriell (1800)';
+            else if (co2 < 330) period = '1950-tallet';
+            else if (co2 < 400) period = '1990-tallet';
+            else if (co2 < 450) period = 'I dag';
+            else if (co2 < 550) period = '2050 (scenario)';
+            else if (co2 < 700) period = '2100 (høyt scenario)';
+            else period = 'Katastrofescenario';
+            
+            document.getElementById('co2Val').textContent = co2;
+            document.getElementById('co2Display').textContent = co2;
+            document.getElementById('tempDisplay').textContent = temp.toFixed(1);
+            document.getElementById('periodDisplay').textContent = period;
+            
+            // Color based on danger
+            const tempEl = document.getElementById('tempDisplay');
+            if (temp > 17) tempEl.style.color = '#ff4444';
+            else if (temp > 16) tempEl.style.color = '#ff9900';
+            else if (temp > 15.5) tempEl.style.color = '#ffaa00';
+            else tempEl.style.color = '#44cc88';
+            
+            // Warning box
+            document.getElementById('warningBox').style.display = co2 > 500 ? 'block' : 'none';
+            
+            drawCO2Graph();
+        }
+        
+        function drawCO2Graph() {
+            const canvas = document.getElementById('co2Canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            const co2 = parseInt(document.getElementById('co2Slider').value);
+            
+            ctx.fillStyle = '#050a05';
+            ctx.fillRect(0, 0, W, H);
+            
+            // Draw CO2 bar
+            const barWidth = (co2 / 800) * (W - 100);
+            let barColor = '#44cc88';
+            if (co2 > 450) barColor = '#ffaa00';
+            if (co2 > 550) barColor = '#ff4444';
+            
+            ctx.fillStyle = barColor;
+            ctx.fillRect(50, 50, barWidth, 40);
+            
+            // Scale markers
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+            
+            const markers = [200, 280, 350, 420, 500, 600, 800];
+            markers.forEach(m => {
+                const x = 50 + (m / 800) * (W - 100);
+                ctx.fillRect(x, 95, 1, 10);
+                ctx.fillText(m, x, 120);
+            });
+            
+            // Labels
+            ctx.fillStyle = '#44cc88';
+            ctx.fillText('280: Førindustriell', 50 + (280/800) * (W-100), 140);
+            ctx.fillStyle = '#ff4444';
+            ctx.fillText('420: I dag', 50 + (420/800) * (W-100), 160);
+            
+            // Current value marker
+            const currentX = 50 + (co2 / 800) * (W - 100);
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.moveTo(currentX, 45);
+            ctx.lineTo(currentX - 8, 30);
+            ctx.lineTo(currentX + 8, 30);
+            ctx.fill();
+        }
+        
+        // === FLASHCARDS ===
+        const flashcards = [
+            { q: 'Hva er CO₂-nivået i dag?', a: 'Ca. 420 ppm (+50% fra førindustriell)' },
+            { q: 'Hva var CO₂-nivået før industrien?', a: 'Ca. 280 ppm' },
+            { q: 'Hva ville temperaturen vært uten drivhuseffekt?', a: '−18°C (i stedet for +15°C)' },
+            { q: 'Hvor mye sterkere er metan som drivhusgass?', a: '80× sterkere enn CO₂ (over 20 år)' },
+            { q: 'Hva er de viktigste kildene til CO₂?', a: 'Fossilt brensel, avskoging, industri' },
+            { q: 'Hva er kilder til metan?', a: 'Husdyr, rismarker, søppel, gasslekkasjer' },
+            { q: 'Hva er drivhuseffekten?', a: 'Gasser fanger varmestråling fra jorden' },
+            { q: 'Forventet havstigning innen 2100?', a: '0.5-1 meter (avhengig av utslipp)' },
+            { q: 'Hva er Norges klimamål for 2030?', a: '55% utslippskutt' },
+            { q: 'Hva er karbonfangst?', a: 'Fange CO₂ fra industri og lagre under bakken' },
+            { q: 'Hva skjer ved havforsuring?', a: 'CO₂ løses i havet → surere → koraller dør' },
+            { q: 'Nevn 3 klimatiltak du kan gjøre', a: 'Sykle, fly mindre, spise mindre kjøtt' },
+            { q: 'Hva driver klimaendringene?', a: 'Hovedsakelig menneskelige utslipp av CO₂' },
+            { q: 'Hva er et vippepunkt?', a: 'Terskel der klima endres brått og irreversibelt' },
+            { q: 'Hvor mye har jorden varmet seg?', a: 'Ca. 1.1°C siden førindustriell tid' }
+        ];
+        
+        let currentCard = 0;
+        
+        function renderCard() {
+            document.getElementById('flashQ').textContent = flashcards[currentCard].q;
+            document.getElementById('flashA').textContent = flashcards[currentCard].a;
+            document.getElementById('flashCounter').textContent = `Kort ${currentCard + 1} av ${flashcards.length}`;
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+        
+        function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+        function nextCard() { currentCard = (currentCard + 1) % flashcards.length; renderCard(); }
+        function prevCard() { currentCard = (currentCard - 1 + flashcards.length) % flashcards.length; renderCard(); }
+        function shuffleCards() { currentCard = Math.floor(Math.random() * flashcards.length); renderCard(); }
+        
+        // === QUIZ ===
+        const quizQuestions = [
+            { q: 'CO₂-nivå før industrien?', o: ['180 ppm', '280 ppm', '380 ppm', '420 ppm'], c: 1 },
+            { q: 'CO₂-økning siden 1800?', o: ['10%', '25%', '50%', '100%'], c: 2 },
+            { q: 'Metan vs CO₂?', o: ['Svakere', 'Like sterk', '10× sterkere', '80× sterkere'], c: 3 },
+            { q: 'Temp uten drivhuseffekt?', o: ['+30°C', '+15°C', '0°C', '−18°C'], c: 3 },
+            { q: 'Største kilde til CO₂?', o: ['Kyr', 'Fossilt brensel', 'Vulkaner', 'Hav'], c: 1 },
+            { q: 'Forventet havstigning 2100?', o: ['1 cm', '10 cm', '0.5-1 m', '10 m'], c: 2 },
+            { q: 'Hva er drivhuseffekt?', o: ['Solen varmer', 'Gasser fanger varme', 'Is smelter', 'Vind'], c: 1 },
+            { q: 'Hva er karbonfangst?', o: ['Plante trær', 'Fange og lagre CO₂', 'Stoppe utslipp', 'Filtrere luft'], c: 1 },
+            { q: 'Norges klimamål 2030?', o: ['10% kutt', '30% kutt', '55% kutt', '100% kutt'], c: 2 },
+            { q: 'Hva driver klimaendringene?', o: ['Solen', 'Vulkaner', 'Mennesker', 'Naturlige sykluser'], c: 2 },
+            { q: 'Hva skjer ved havforsuring?', o: ['Havet blir varmere', 'Havet blir surere', 'Havet fryser', 'Ingenting'], c: 1 },
+            { q: 'Hvor mye har jorden varmet seg?', o: ['0.1°C', '1.1°C', '5°C', '10°C'], c: 1 }
+        ];
+        
+        let quizAnswers = {};
+        let quizChecked = false;
+        
+        function renderQuiz() {
+            document.getElementById('quizContainer').innerHTML = quizQuestions.map((q, qi) => `
+                <div class="quiz-question" id="q${qi}">
+                    <div class="quiz-text"><strong>${qi + 1}.</strong> ${q.q}</div>
+                    <div class="quiz-options">
+                        ${q.o.map((opt, oi) => `<div class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q${qi}o${oi}">${opt}</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function selectAnswer(qi, oi) {
+            if (quizChecked) return;
+            quizAnswers[qi] = oi;
+            quizQuestions[qi].o.forEach((_, i) => {
+                document.getElementById(`q${qi}o${i}`).classList.toggle('selected', i === oi);
+            });
+        }
+        
+        function checkQuiz() {
+            quizChecked = true;
+            let score = 0;
+            quizQuestions.forEach((q, qi) => {
+                const qEl = document.getElementById(`q${qi}`);
+                if (quizAnswers[qi] === q.c) { score++; qEl.classList.add('correct'); }
+                else { qEl.classList.add('wrong'); }
+                document.getElementById(`q${qi}o${q.c}`).classList.add('correct-answer');
+                if (quizAnswers[qi] !== undefined && quizAnswers[qi] !== q.c) {
+                    document.getElementById(`q${qi}o${quizAnswers[qi]}`).classList.add('wrong-answer');
+                }
+            });
+            
+            document.getElementById('resultBox').style.display = 'block';
+            document.getElementById('resultScore').textContent = `${score}/${quizQuestions.length}`;
+            document.getElementById('resultScore').className = 'quiz-score ' + (score >= 10 ? 'good' : score >= 6 ? 'medium' : 'bad');
+            document.getElementById('resultMsg').textContent = score >= 10 ? '🎉 Utmerket!' : score >= 6 ? '👍 Bra!' : '📚 Øv mer!';
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('retryBtn').style.display = 'inline-block';
+            
+            if (score >= 8) localStorage.setItem('naturfag_klima_done', 'true');
+        }
+        
+        function resetQuiz() {
+            quizAnswers = {};
+            quizChecked = false;
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('checkBtn').style.display = 'inline-block';
+            document.getElementById('retryBtn').style.display = 'none';
+            renderQuiz();
+        }
+        
+        // === INIT ===
+        renderCard();
+        renderQuiz();
+        loadAnswers();
+        
+        // === OPPGAVER ===
+        function saveAnswers() {
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('oppg' + i);
+                if (el) localStorage.setItem('klima_oppg' + i, el.value);
+            }
+        }
+        
+        function loadAnswers() {
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('oppg' + i);
+                const saved = localStorage.getItem('klima_oppg' + i);
+                if (el && saved) el.value = saved;
+            }
+        }
+        
+        function downloadAnswers() {
+            const name = localStorage.getItem('naturfag_student') || 'Elev';
+            let text = 'SKRIVEOPPGAVER - MODUL 4: KLIMA\n';
+            text += 'Navn: ' + name + '\n';
+            text += 'Dato: ' + new Date().toLocaleDateString('no-NO') + '\n';
+            text += '='.repeat(50) + '\n\n';
+            
+            const titles = [
+                'Oppgave 1: Drivhuseffekten',
+                'Oppgave 2: Drivhusgasser',
+                'Oppgave 3: Konsekvenser av klimaendringer',
+                'Oppgave 4: Klimatiltak',
+                'Oppgave 5: Norge og klimaendringer',
+                'Oppgave 6: Vippepunkter og fremtiden'
+            ];
+            
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('oppg' + i);
+                text += titles[i-1] + '\n' + '-'.repeat(40) + '\n';
+                text += (el ? el.value : '') + '\n\n';
+            }
+            
+            const blob = new Blob([text], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'klima-oppgaver-' + name.replace(/\s/g, '_') + '.txt';
+            a.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul 2: Radioaktivitet</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        
+        .topnav {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .topnav a { color: #888; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .topnav a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .nav-title { color: #ff9900; font-weight: bold; font-size: 1.1rem; }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            padding: 20px 30px;
+            background: rgba(0,0,0,0.2);
+            overflow-x: auto;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .tab {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-radius: 10px;
+            color: #888;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .tab:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .tab.active { background: #ff9900; color: #000; }
+        
+        .content { padding: 30px; max-width: 1000px; margin: 0 auto; }
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        h1 { font-size: 2rem; margin-bottom: 20px; color: #ff9900; }
+        h2 { font-size: 1.5rem; margin: 30px 0 15px; color: #ffaa33; }
+        h3 { font-size: 1.2rem; margin: 25px 0 12px; color: #ffbb55; }
+        p { line-height: 1.8; margin-bottom: 15px; }
+        ul, ol { margin: 15px 0 15px 25px; line-height: 2; }
+        
+        .box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .box-alfa { border-left: 4px solid #ff4444; background: rgba(255,68,68,0.1); }
+        .box-beta { border-left: 4px solid #00aaff; background: rgba(0,170,255,0.1); }
+        .box-gamma { border-left: 4px solid #aa44ff; background: rgba(170,68,255,0.1); }
+        .box-warning { border-left: 4px solid #ff4444; background: rgba(255,68,68,0.15); }
+        .box-success { border-left: 4px solid #44cc88; background: rgba(68,204,136,0.1); }
+        
+        .simulator {
+            background: #0d0d1a;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid rgba(255,153,0,0.3);
+        }
+        .sim-title {
+            color: #ff9900;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        canvas { border-radius: 10px; display: block; margin: 15px 0; }
+        
+        .controls { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-alfa { background: #ff4444; color: #fff; }
+        .btn-alfa:hover { background: #ff6666; }
+        .btn-beta { background: #00aaff; color: #fff; }
+        .btn-beta:hover { background: #33bbff; }
+        .btn-gamma { background: #aa44ff; color: #fff; }
+        .btn-gamma:hover { background: #bb66ff; }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .btn-primary { background: #ff9900; color: #000; }
+        .btn-primary:hover { background: #ffaa33; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(255,255,255,0.05); color: #ff9900; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+        
+        .result-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .result-item {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .result-value { font-size: 1.8rem; font-weight: bold; }
+        .result-label { color: #888; font-size: 0.85rem; margin-top: 5px; }
+        
+        .isotope-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .isotope-btn {
+            padding: 10px 18px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .isotope-btn:hover { border-color: #ff9900; }
+        .isotope-btn.active { border-color: #ff9900; background: rgba(255,153,0,0.2); }
+        
+        /* Flashcards */
+        .flashcard-container { perspective: 1000px; margin: 30px 0; }
+        .flashcard {
+            width: 100%;
+            height: 250px;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .flashcard.flipped { transform: rotateY(180deg); }
+        .flash-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+        }
+        .flash-front { background: linear-gradient(135deg, #1a1a3e, #2a2a5e); border: 2px solid rgba(255,153,0,0.3); }
+        .flash-back { background: linear-gradient(135deg, #143, #254); border: 2px solid rgba(68,204,136,0.3); transform: rotateY(180deg); }
+        .flash-label { font-size: 0.8rem; color: #888; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .flash-text { font-size: 1.3rem; line-height: 1.6; }
+        .flash-hint { font-size: 0.8rem; color: #666; margin-top: 20px; }
+        .flash-controls { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .flash-btn { padding: 12px 25px; border: none; border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; }
+        .flash-btn:hover { background: #ff9900; color: #000; }
+        .flash-counter { text-align: center; color: #888; margin-bottom: 15px; }
+        
+        /* Quiz */
+        .quiz-question { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 25px; margin: 20px 0; }
+        .quiz-question.correct { border-color: #44cc88; background: rgba(68,204,136,0.1); }
+        .quiz-question.wrong { border-color: #ff4444; background: rgba(255,68,68,0.1); }
+        .quiz-text { font-size: 1.1rem; margin-bottom: 20px; }
+        .quiz-options { display: grid; gap: 10px; }
+        .quiz-option { padding: 15px 20px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; transition: all 0.3s; }
+        .quiz-option:hover { border-color: #ff9900; background: rgba(255,153,0,0.1); }
+        .quiz-option.selected { border-color: #00ffff; background: rgba(0,255,255,0.1); }
+        .quiz-option.correct-answer { border-color: #44cc88; background: rgba(68,204,136,0.2); }
+        .quiz-option.wrong-answer { border-color: #ff4444; background: rgba(255,68,68,0.2); }
+        
+        .quiz-result { text-align: center; padding: 30px; background: rgba(255,255,255,0.05); border-radius: 15px; margin: 30px 0; }
+        .quiz-score { font-size: 3rem; font-weight: bold; }
+        .quiz-score.good { color: #44cc88; }
+        .quiz-score.medium { color: #ffaa00; }
+        .quiz-score.bad { color: #ff4444; }
+        
+        /* Halveringstid visualization */
+        .particle-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .particle {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            transition: background 0.5s;
+        }
+        .particle.active { background: #44cc88; }
+        .particle.decayed { background: #333; }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #333;
+            -webkit-appearance: none;
+            margin: 15px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #ff9900;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 600px) {
+            .tabs { padding: 15px; }
+            .tab { padding: 10px 15px; font-size: 0.8rem; }
+            .content { padding: 20px 15px; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="topnav">
+        <a href="index.html">← Tilbake til oversikt</a>
+        <span class="nav-title">☢️ Modul 2: Radioaktivitet</span>
+        <span id="progressLabel">0%</span>
+    </nav>
+    
+    <div class="tabs">
+        <button class="tab active" onclick="showSection(0)">📖 Introduksjon</button>
+        <button class="tab" onclick="showSection(1)">🔴 Alfa-henfall</button>
+        <button class="tab" onclick="showSection(2)">🔵 Beta-henfall</button>
+        <button class="tab" onclick="showSection(3)">🟣 Gamma-stråling</button>
+        <button class="tab" onclick="showSection(4)">📊 Sammenligning</button>
+        <button class="tab" onclick="showSection(5)">⏱️ Halveringstid</button>
+        <button class="tab" onclick="showSection(6)">🏠 Radon</button>
+        <button class="tab" onclick="showSection(7)">🃏 Flashcards</button>
+        <button class="tab" onclick="showSection(8)">❓ Quiz</button>
+        <button class="tab" onclick="showSection(9)">📝 Oppgaver</button>
+    </div>
+    
+    <div class="content">
+        <!-- SEKSJON 0: INTRODUKSJON -->
+        <div class="section active" id="sec0">
+            <h1>☢️ Radioaktivitet</h1>
+            
+            <div class="box" style="border-left: 4px solid #ff9900;">
+                <h3>🎯 Læringsmål</h3>
+                <ul>
+                    <li>Forklare hva radioaktivitet er og hvorfor noen atomkjerner er ustabile</li>
+                    <li>Beskrive alfa-, beta- og gammastråling og deres egenskaper</li>
+                    <li>Beregne endringer i atomnummer og massetall ved henfall</li>
+                    <li>Forstå og bruke begrepet halveringstid</li>
+                    <li>Vurdere helserisiko ved radon og andre radioaktive stoffer</li>
+                </ul>
+            </div>
+            
+            <h2>Hva er radioaktivitet?</h2>
+            <p>
+                <strong>Radioaktivitet</strong> er spontan utsendelse av stråling fra ustabile atomkjerner.
+                Atomkjernen prøver å bli mer stabil ved å kvitte seg med overskuddsenergi eller partikler.
+            </p>
+            
+            <p>
+                En atomkjerne består av <strong>protoner</strong> (positive) og <strong>nøytroner</strong> (nøytrale).
+                Disse holdes sammen av den <strong>sterke kjernekraften</strong>. Men hvis forholdet mellom 
+                protoner og nøytroner er ugunstig, blir kjernen ustabil og vil henfalle.
+            </p>
+            
+            <div class="box">
+                <h3>📐 Viktige begreper</h3>
+                <table>
+                    <tr>
+                        <td><strong>Atomnummer (Z)</strong></td>
+                        <td>Antall protoner i kjernen. Bestemmer hvilket grunnstoff det er.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Massetall (A)</strong></td>
+                        <td>Antall nukleoner (protoner + nøytroner) i kjernen.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Isotoper</strong></td>
+                        <td>Atomer med samme antall protoner, men ulikt antall nøytroner.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nuklide</strong></td>
+                        <td>En bestemt kombinasjon av protoner og nøytroner.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mor-isotop</strong></td>
+                        <td>Den ustabile isotopen som henfaller.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Datter-isotop</strong></td>
+                        <td>Produktet etter henfallet.</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <h2>Kjernenotasjon</h2>
+            <p>Vi skriver isotoper med kjernenotasjon:</p>
+            <div class="box" style="text-align: center; font-size: 1.5rem;">
+                <sup style="color: #00ffff;">A</sup><sub style="color: #ff9900;">Z</sub>X
+                <p style="font-size: 1rem; margin-top: 15px; color: #888;">
+                    A = massetall (oppe), Z = atomnummer (nede), X = grunnstofsymbol
+                </p>
+            </div>
+            
+            <p>For eksempel: <sup>238</sup><sub>92</sub>U betyr uran med 92 protoner og 238 nukleoner (altså 146 nøytroner).</p>
+            
+            <h2>De tre hovedtypene radioaktivt henfall</h2>
+            <div class="result-box">
+                <div class="result-item" style="border: 2px solid #ff4444;">
+                    <div style="font-size: 2rem;">🔴</div>
+                    <div class="result-value" style="color: #ff4444;">α</div>
+                    <div class="result-label">Alfa-henfall<br>Heliumkjerne sendes ut</div>
+                </div>
+                <div class="result-item" style="border: 2px solid #00aaff;">
+                    <div style="font-size: 2rem;">🔵</div>
+                    <div class="result-value" style="color: #00aaff;">β</div>
+                    <div class="result-label">Beta-henfall<br>Elektron sendes ut</div>
+                </div>
+                <div class="result-item" style="border: 2px solid #aa44ff;">
+                    <div style="font-size: 2rem;">🟣</div>
+                    <div class="result-value" style="color: #aa44ff;">γ</div>
+                    <div class="result-label">Gamma-stråling<br>Foton sendes ut</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" onclick="showSection(1)">Neste: Alfa-henfall →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 1: ALFA-HENFALL -->
+        <div class="section" id="sec1">
+            <h1>🔴 Alfa-henfall (α)</h1>
+            
+            <div class="box box-alfa">
+                <h3>Hva er alfa-henfall?</h3>
+                <p>
+                    Ved alfa-henfall sender kjernen ut en <strong>alfapartikkel</strong> - 
+                    en heliumkjerne bestående av <strong>2 protoner</strong> og <strong>2 nøytroner</strong>.
+                </p>
+            </div>
+            
+            <h2>Velg isotop for simulering:</h2>
+            <div class="isotope-selector" id="alfaSelector">
+                <button class="isotope-btn active" onclick="selectAlfa(0)">U-238 → Th-234</button>
+                <button class="isotope-btn" onclick="selectAlfa(1)">Ra-226 → Rn-222</button>
+                <button class="isotope-btn" onclick="selectAlfa(2)">Rn-222 → Po-218</button>
+                <button class="isotope-btn" onclick="selectAlfa(3)">Po-210 → Pb-206</button>
+            </div>
+            
+            <div class="simulator">
+                <div class="sim-title">🔴 Alfa-henfall simulering</div>
+                <canvas id="alfaCanvas" width="800" height="300" style="width: 100%; background: #050510;"></canvas>
+                
+                <div class="result-box">
+                    <div class="result-item">
+                        <div class="result-label">Mor-isotop</div>
+                        <div class="result-value" style="color: #ff4444;" id="alfaMor">U-238</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Datter-isotop</div>
+                        <div class="result-value" style="color: #44cc88;" id="alfaDatter">Th-234</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">ΔZ (atomnummer)</div>
+                        <div class="result-value" style="color: #ff9900;">−2</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">ΔA (massetall)</div>
+                        <div class="result-value" style="color: #00ffff;">−4</div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-alfa" onclick="startAlfa()">▶️ Start alfa-henfall</button>
+                    <button class="btn btn-secondary" onclick="resetAlfa()">🔄 Nullstill</button>
+                </div>
+            </div>
+            
+            <div class="box box-alfa">
+                <h3>📝 Nøkkelpunkter om alfa-henfall:</h3>
+                <ul>
+                    <li>Alfapartikkelen er en <strong>heliumkjerne</strong> (⁴₂He) - 2 protoner + 2 nøytroner</li>
+                    <li>Atomnummeret (Z) synker med <strong>2</strong> fordi 2 protoner forsvinner</li>
+                    <li>Massetallet (A) synker med <strong>4</strong> fordi 4 nukleoner forsvinner</li>
+                    <li>Alfapartikler er <strong>tunge og saktegående</strong> (5-10% av lyshastigheten)</li>
+                    <li>Kort rekkevidde: bare <strong>noen centimeter i luft</strong></li>
+                    <li>Stoppes av <strong>et ark papir</strong> eller de ytre hudlagene</li>
+                    <li>Høy <strong>ioniseringsevne</strong> - gjør mye skade per strekning</li>
+                </ul>
+            </div>
+            
+            <div class="box box-warning">
+                <h3>⚠️ FARE ved alfa-stråling</h3>
+                <p>
+                    Utvendig er alfastråling <strong>lite farlig</strong> fordi den stoppes av huden.
+                    Men innvendig (hvis du puster inn eller svelger en alfakilde) er den 
+                    <strong>SVÆRT FARLIG</strong> fordi all energien deponeres i følsomt vev!
+                </p>
+                <p style="margin-top: 10px;">
+                    <strong>Eksempel:</strong> Alexander Litvinenko ble forgiftet med polonium-210 (alfakilde) i 2006.
+                </p>
+            </div>
+            
+            <h2>Eksempel: Henfallsligning</h2>
+            <div class="box" style="text-align: center; font-size: 1.3rem;">
+                <span style="color: #ff4444;">²³⁸₉₂U</span> → 
+                <span style="color: #44cc88;">²³⁴₉₀Th</span> + 
+                <span style="color: #ffff00;">⁴₂He</span>
+                <p style="font-size: 1rem; margin-top: 15px; color: #888;">
+                    Uran-238 → Thorium-234 + alfapartikkel
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(0)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(2)">Neste: Beta-henfall →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 2: BETA-HENFALL -->
+        <div class="section" id="sec2">
+            <h1>🔵 Beta-henfall (β⁻)</h1>
+            
+            <div class="box box-beta">
+                <h3>Hva er beta-henfall?</h3>
+                <p>
+                    Ved beta-henfall omdannes et <strong>nøytron til et proton</strong> i kjernen.
+                    Et elektron (β⁻) og et antinøytrino sendes ut med høy hastighet.
+                </p>
+                <p style="text-align: center; font-size: 1.2rem; margin-top: 15px;">
+                    n → p + e⁻ + ν̄
+                </p>
+            </div>
+            
+            <h2>Velg isotop for simulering:</h2>
+            <div class="isotope-selector" id="betaSelector">
+                <button class="isotope-btn active" onclick="selectBeta(0)">C-14 → N-14</button>
+                <button class="isotope-btn" onclick="selectBeta(1)">H-3 → He-3</button>
+                <button class="isotope-btn" onclick="selectBeta(2)">I-131 → Xe-131</button>
+                <button class="isotope-btn" onclick="selectBeta(3)">Cs-137 → Ba-137</button>
+            </div>
+            
+            <div class="simulator">
+                <div class="sim-title">🔵 Beta-henfall simulering</div>
+                <canvas id="betaCanvas" width="800" height="300" style="width: 100%; background: #050510;"></canvas>
+                
+                <div class="result-box">
+                    <div class="result-item">
+                        <div class="result-label">Mor-isotop</div>
+                        <div class="result-value" style="color: #00aaff;" id="betaMor">C-14</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Datter-isotop</div>
+                        <div class="result-value" style="color: #44cc88;" id="betaDatter">N-14</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">ΔZ (atomnummer)</div>
+                        <div class="result-value" style="color: #ff9900;">+1</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">ΔA (massetall)</div>
+                        <div class="result-value" style="color: #00ffff;">0</div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-beta" onclick="startBeta()">▶️ Start beta-henfall</button>
+                    <button class="btn btn-secondary" onclick="resetBeta()">🔄 Nullstill</button>
+                </div>
+            </div>
+            
+            <div class="box box-beta">
+                <h3>📝 Nøkkelpunkter om beta-henfall:</h3>
+                <ul>
+                    <li>Et <strong>nøytron omdannes til et proton</strong> i kjernen</li>
+                    <li>Et <strong>elektron (β⁻)</strong> sendes ut med høy hastighet (opp til 99% av c)</li>
+                    <li>Et <strong>antinøytrino</strong> sendes også ut (vanskelig å detektere)</li>
+                    <li>Atomnummeret (Z) øker med <strong>1</strong> - vi får et ekstra proton</li>
+                    <li>Massetallet (A) er <strong>uendret</strong> - proton og nøytron har nesten samme masse</li>
+                    <li>Rekkevidde: <strong>noen meter i luft</strong></li>
+                    <li>Stoppes av <strong>noen millimeter aluminium</strong> eller noen cm plast</li>
+                </ul>
+            </div>
+            
+            <h2>Bruksområder for beta-stråling</h2>
+            <div class="box">
+                <table>
+                    <tr>
+                        <td><strong>Karbon-14</strong></td>
+                        <td>Karbondatering - bestemme alder på organisk materiale (t½ = 5730 år)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jod-131</strong></td>
+                        <td>Behandling av skjoldbruskkjertelkreft (t½ = 8 dager)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tritium (H-3)</strong></td>
+                        <td>Selvlysende klokker og skilt (t½ = 12.3 år)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Strontium-90</strong></td>
+                        <td>Tykkelsesmåling i industri</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(1)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(3)">Neste: Gamma-stråling →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 3: GAMMA-STRÅLING -->
+        <div class="section" id="sec3">
+            <h1>🟣 Gamma-stråling (γ)</h1>
+            
+            <div class="box box-gamma">
+                <h3>Hva er gamma-stråling?</h3>
+                <p>
+                    Gammastråling er <strong>høyenergi elektromagnetisk stråling</strong> (fotoner) 
+                    som sendes ut når en eksitert kjerne kvitter seg med overskuddsenergi.
+                    Ingen partikler forlater kjernen, så <strong>atomnummer og massetall er uendret</strong>.
+                </p>
+            </div>
+            
+            <div class="simulator">
+                <div class="sim-title">🟣 Gamma-stråling simulering</div>
+                <canvas id="gammaCanvas" width="800" height="300" style="width: 100%; background: #050510;"></canvas>
+                
+                <div class="result-box">
+                    <div class="result-item">
+                        <div class="result-label">Før</div>
+                        <div class="result-value" style="color: #aa44ff;">Eksitert kjerne</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Etter</div>
+                        <div class="result-value" style="color: #44cc88;">Stabil kjerne</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">ΔZ</div>
+                        <div class="result-value" style="color: #888;">0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">ΔA</div>
+                        <div class="result-value" style="color: #888;">0</div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-gamma" onclick="startGamma()">▶️ Start gamma-stråling</button>
+                    <button class="btn btn-secondary" onclick="resetGamma()">🔄 Nullstill</button>
+                </div>
+            </div>
+            
+            <div class="box box-gamma">
+                <h3>📝 Nøkkelpunkter om gamma-stråling:</h3>
+                <ul>
+                    <li>Gammastråling er <strong>elektromagnetisk stråling</strong> - samme type som lys, men med mye høyere energi</li>
+                    <li>Sendes ut når en kjerne <strong>går fra eksitert til lavere energitilstand</strong></li>
+                    <li>Ofte kombinert med alfa- eller beta-henfall (kjernen er fortsatt eksitert etter partikkelemisjonen)</li>
+                    <li>Atomnummer (Z) er <strong>uendret</strong> - ingen protoner forlater kjernen</li>
+                    <li>Massetall (A) er <strong>uendret</strong> - ingen nukleoner forlater kjernen</li>
+                    <li><strong>Svært gjennomtrengende</strong> - kan gå gjennom hele kroppen</li>
+                    <li>Trenger <strong>flere centimeter bly</strong> eller <strong>meter med betong</strong> for å stoppes</li>
+                </ul>
+            </div>
+            
+            <h2>Bruksområder for gamma-stråling</h2>
+            <div class="box">
+                <ul>
+                    <li><strong>Strålebehandling av kreft:</strong> Høyfokusert gamma dreper kreftceller</li>
+                    <li><strong>Sterilisering:</strong> Medisinsk utstyr, mat (bestrålt mat)</li>
+                    <li><strong>Industriell radiografi:</strong> Se etter feil i sveiser og konstruksjoner</li>
+                    <li><strong>Medisinsk diagnostikk:</strong> Gamma-kameraer, PET-skanning</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(2)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(4)">Neste: Sammenligning →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 4: SAMMENLIGNING -->
+        <div class="section" id="sec4">
+            <h1>📊 Sammenligning av strålingstyper</h1>
+            
+            <div class="simulator">
+                <div class="sim-title">🛡️ Gjennomtrengningsevne</div>
+                <canvas id="shieldCanvas" width="800" height="200" style="width: 100%; background: #050510;"></canvas>
+                
+                <div class="controls">
+                    <button class="btn btn-alfa" onclick="showShield('alfa')">🔴 Alfa</button>
+                    <button class="btn btn-beta" onclick="showShield('beta')">🔵 Beta</button>
+                    <button class="btn btn-gamma" onclick="showShield('gamma')">🟣 Gamma</button>
+                </div>
+            </div>
+            
+            <h2>Komplett sammenligningstabell</h2>
+            <div class="box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Egenskap</th>
+                            <th style="color: #ff4444;">α Alfa</th>
+                            <th style="color: #00aaff;">β Beta</th>
+                            <th style="color: #aa44ff;">γ Gamma</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Hva er det?</td>
+                            <td>Heliumkjerne (2p + 2n)</td>
+                            <td>Elektron</td>
+                            <td>Foton (EM-bølge)</td>
+                        </tr>
+                        <tr>
+                            <td>Ladning</td>
+                            <td>+2</td>
+                            <td>−1</td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td>Masse</td>
+                            <td>4 u (tung)</td>
+                            <td>~0.0005 u (lett)</td>
+                            <td>0 (masseløs)</td>
+                        </tr>
+                        <tr>
+                            <td>Hastighet</td>
+                            <td>5-10% av c</td>
+                            <td>Opp til 99% av c</td>
+                            <td>c (lyshastighet)</td>
+                        </tr>
+                        <tr>
+                            <td>ΔZ (atomnummer)</td>
+                            <td style="color: #ff4444;">−2</td>
+                            <td style="color: #00aaff;">+1</td>
+                            <td style="color: #888;">0</td>
+                        </tr>
+                        <tr>
+                            <td>ΔA (massetall)</td>
+                            <td style="color: #ff4444;">−4</td>
+                            <td style="color: #888;">0</td>
+                            <td style="color: #888;">0</td>
+                        </tr>
+                        <tr>
+                            <td>Rekkevidde i luft</td>
+                            <td>Noen cm</td>
+                            <td>Noen meter</td>
+                            <td>Svært lang</td>
+                        </tr>
+                        <tr>
+                            <td>Stoppes av</td>
+                            <td>Papir, hud</td>
+                            <td>Aluminium (mm)</td>
+                            <td>Bly (cm), betong (m)</td>
+                        </tr>
+                        <tr>
+                            <td>Ioniseringsevne</td>
+                            <td style="color: #ff4444;">Svært høy</td>
+                            <td style="color: #ffaa00;">Middels</td>
+                            <td style="color: #44cc88;">Lav</td>
+                        </tr>
+                        <tr>
+                            <td>Fare utvendig</td>
+                            <td style="color: #44cc88;">Lav (stoppes av hud)</td>
+                            <td style="color: #ffaa00;">Middels</td>
+                            <td style="color: #ff4444;">Høy</td>
+                        </tr>
+                        <tr>
+                            <td>Fare innvendig</td>
+                            <td style="color: #ff4444;">SVÆRT HØY</td>
+                            <td style="color: #ff4444;">Høy</td>
+                            <td style="color: #ff4444;">Høy</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="box box-success">
+                <h3>💡 Huskeregel for skjerming</h3>
+                <p style="font-size: 1.2rem; text-align: center;">
+                    <strong>Alfa:</strong> PAPIR &nbsp;|&nbsp; 
+                    <strong>Beta:</strong> ALUMINIUM &nbsp;|&nbsp; 
+                    <strong>Gamma:</strong> BLY
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(3)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(5)">Neste: Halveringstid →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 5: HALVERINGSTID -->
+        <div class="section" id="sec5">
+            <h1>⏱️ Halveringstid</h1>
+            
+            <div class="box" style="border-left: 4px solid #ff9900;">
+                <h3>Definisjon</h3>
+                <p>
+                    <strong>Halveringstid (t½)</strong> er tiden det tar før halvparten av de radioaktive 
+                    atomene i en prøve har henfallt til andre isotoper. Dette er en statistisk egenskap -
+                    vi kan ikke forutsi når et enkelt atom vil henfalle, men vi kan forutsi hvor mange 
+                    som vil henfalle over tid.
+                </p>
+            </div>
+            
+            <div class="simulator">
+                <div class="sim-title">⏱️ Halveringstid-simulering</div>
+                
+                <p style="margin-bottom: 10px;">Antall halveringstider: <strong id="halvVal">0</strong></p>
+                <input type="range" id="halvSlider" min="0" max="10" value="0" step="1" oninput="updateHalv()">
+                
+                <div class="result-box">
+                    <div class="result-item">
+                        <div class="result-value" style="color: #44cc88;" id="remaining">100%</div>
+                        <div class="result-label">Gjenværende</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value" style="color: #ff4444;" id="decayed">0%</div>
+                        <div class="result-label">Henfalte</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value" style="color: #00ffff;" id="formula">100</div>
+                        <div class="result-label">N = N₀ × (½)ⁿ</div>
+                    </div>
+                </div>
+                
+                <div class="particle-grid" id="particleGrid"></div>
+                
+                <div style="display: flex; justify-content: center; gap: 30px; margin-top: 20px;">
+                    <span><span class="particle active" style="display: inline-block;"></span> Radioaktive</span>
+                    <span><span class="particle decayed" style="display: inline-block;"></span> Henfalte</span>
+                </div>
+            </div>
+            
+            <h2>Eksempler på halveringstider</h2>
+            <div class="box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Isotop</th>
+                            <th>Halveringstid</th>
+                            <th>Bruk/kommentar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Polonium-214</td>
+                            <td style="color: #ff4444;">0.00016 sekunder</td>
+                            <td>Ekstremt kortlivet</td>
+                        </tr>
+                        <tr>
+                            <td>Radon-222</td>
+                            <td style="color: #ff4444;">3.8 dager</td>
+                            <td>Farlig innendørs</td>
+                        </tr>
+                        <tr>
+                            <td>Jod-131</td>
+                            <td style="color: #ffaa00;">8 dager</td>
+                            <td>Kreftbehandling</td>
+                        </tr>
+                        <tr>
+                            <td>Cesium-137</td>
+                            <td style="color: #ffaa00;">30 år</td>
+                            <td>Radioaktivt avfall</td>
+                        </tr>
+                        <tr>
+                            <td>Karbon-14</td>
+                            <td style="color: #44cc88;">5730 år</td>
+                            <td>Karbondatering</td>
+                        </tr>
+                        <tr>
+                            <td>Plutonium-239</td>
+                            <td style="color: #44cc88;">24 100 år</td>
+                            <td>Atomvåpen, reaktorer</td>
+                        </tr>
+                        <tr>
+                            <td>Uran-238</td>
+                            <td style="color: #44cc88;">4.5 milliarder år</td>
+                            <td>Jordens alder!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <h2>Regneeksempel</h2>
+            <div class="box">
+                <p><strong>Oppgave:</strong> Du har 800 gram av et radioaktivt stoff med halveringstid 2 timer. Hvor mye er igjen etter 6 timer?</p>
+                <p style="margin-top: 15px;"><strong>Løsning:</strong></p>
+                <ol>
+                    <li>Antall halveringstider: n = 6 timer ÷ 2 timer = <strong>3</strong></li>
+                    <li>Gjenværende mengde: N = 800 × (½)³ = 800 × ⅛ = <strong>100 gram</strong></li>
+                </ol>
+                <p style="margin-top: 15px; color: #44cc88;"><strong>Svar:</strong> 100 gram er igjen etter 6 timer.</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(4)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(6)">Neste: Radon →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 6: RADON -->
+        <div class="section" id="sec6">
+            <h1>🏠 Radon i norske hjem</h1>
+            
+            <div class="box box-warning">
+                <h3>⚠️ Hva er radon?</h3>
+                <p>
+                    Radon (Rn-222) er en <strong>radioaktiv edelgass</strong> som dannes naturlig når 
+                    uran-238 i berggrunnen brytes ned. Radon er et ledd i en lang henfallskjede 
+                    som starter med uran og ender med stabilt bly.
+                </p>
+            </div>
+            
+            <h2>Radon i henfallskjeden</h2>
+            <div class="box" style="text-align: center; font-size: 1.1rem;">
+                U-238 → ... → Ra-226 → <span style="color: #ff4444; font-weight: bold;">Rn-222</span> → Po-218 → ... → Pb-206 (stabilt)
+            </div>
+            
+            <h2>Egenskaper som gjør radon farlig</h2>
+            <div class="result-box">
+                <div class="result-item" style="border: 2px solid #ff4444;">
+                    <div style="font-size: 2rem;">👁️</div>
+                    <div class="result-label">USYNLIG<br>Kan ikke ses</div>
+                </div>
+                <div class="result-item" style="border: 2px solid #ff4444;">
+                    <div style="font-size: 2rem;">👃</div>
+                    <div class="result-label">LUKTFRI<br>Kan ikke luktes</div>
+                </div>
+                <div class="result-item" style="border: 2px solid #ff4444;">
+                    <div style="font-size: 2rem;">👅</div>
+                    <div class="result-label">SMAKLØS<br>Kan ikke smakes</div>
+                </div>
+                <div class="result-item" style="border: 2px solid #ff4444;">
+                    <div style="font-size: 2rem;">☢️</div>
+                    <div class="result-label">ALFASTRÅLER<br>Ioniserende</div>
+                </div>
+            </div>
+            
+            <h2>Hvorfor er radon farlig?</h2>
+            <div class="box">
+                <ol style="line-height: 2.5;">
+                    <li>Radon-gassen <strong>siver opp fra bakken</strong> gjennom sprekker i grunnmur og gulv</li>
+                    <li>Gassen <strong>samler seg innendørs</strong>, spesielt i kjellere og første etasje</li>
+                    <li>Du <strong>puster inn</strong> radon-gassen uten å vite det</li>
+                    <li>Radon henfaller til polonium <strong>inne i lungene dine</strong></li>
+                    <li>Polonium sender ut <strong>alfastråling som skader lungecellene</strong></li>
+                    <li>Over tid kan dette føre til <strong>lungekreft</strong></li>
+                </ol>
+            </div>
+            
+            <div class="box box-warning" style="text-align: center;">
+                <h3 style="color: #ff4444; font-size: 1.5rem;">Radon er den NEST vanligste årsaken til lungekreft i Norge!</h3>
+                <p style="font-size: 1.2rem; margin-top: 10px;">Ca. 300 mennesker dør av radon-relatert lungekreft hvert år.</p>
+                <p style="color: #ffaa00; margin-top: 10px;">Røykere har 25× høyere risiko enn ikke-røykere!</p>
+            </div>
+            
+            <h2>Tiltaksgrenser i Norge</h2>
+            <div class="result-box">
+                <div class="result-item" style="border: 3px solid #44cc88; background: rgba(68,204,136,0.1);">
+                    <div class="result-value" style="color: #44cc88; font-size: 2.5rem;">100</div>
+                    <div class="result-label">Bq/m³<br><strong>Tiltaksgrense</strong><br>Bør vurdere tiltak</div>
+                </div>
+                <div class="result-item" style="border: 3px solid #ff4444; background: rgba(255,68,68,0.1);">
+                    <div class="result-value" style="color: #ff4444; font-size: 2.5rem;">200</div>
+                    <div class="result-label">Bq/m³<br><strong>Maksimumsgrense</strong><br>MÅ gjøre tiltak</div>
+                </div>
+            </div>
+            
+            <h2>Tiltak mot radon</h2>
+            <div class="box box-success">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div>
+                        <h4 style="color: #44cc88;">🔍 1. MÅL</h4>
+                        <p>Bestill sporfilm (200-400 kr). Legg i oppholdsrom i 2-3 måneder (helst vinter).</p>
+                    </div>
+                    <div>
+                        <h4 style="color: #44cc88;">🚪 2. TETT</h4>
+                        <p>Tett hull og sprekker i gulv og vegger mot grunnen med spesialmasse.</p>
+                    </div>
+                    <div>
+                        <h4 style="color: #44cc88;">💨 3. RADONBRØNN</h4>
+                        <p>En vifte som suger radonholdig luft ut fra under huset før den kommer inn.</p>
+                    </div>
+                    <div>
+                        <h4 style="color: #44cc88;">🌬️ 4. VENTILASJON</h4>
+                        <p>Bedre lufting i kjeller og oppholdsrom. Balansert ventilasjon er best.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(5)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(7)">Neste: Flashcards →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 7: FLASHCARDS -->
+        <div class="section" id="sec7">
+            <h1>🃏 Flashcards</h1>
+            <p>Klikk på kortet for å snu det.</p>
+            
+            <div class="flash-counter" id="flashCounter">Kort 1 av 20</div>
+            
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard" onclick="flipCard()">
+                    <div class="flash-face flash-front">
+                        <div class="flash-label">Spørsmål</div>
+                        <div class="flash-text" id="flashQ">Laster...</div>
+                        <div class="flash-hint">Klikk for å se svaret</div>
+                    </div>
+                    <div class="flash-face flash-back">
+                        <div class="flash-label">Svar</div>
+                        <div class="flash-text" id="flashA">Laster...</div>
+                        <div class="flash-hint">Klikk for å gå tilbake</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flash-controls">
+                <button class="flash-btn" onclick="prevCard()">← Forrige</button>
+                <button class="flash-btn" onclick="shuffleCards()">🔀 Tilfeldig</button>
+                <button class="flash-btn" onclick="nextCard()">Neste →</button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(6)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(8)">Neste: Quiz →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 8: QUIZ -->
+        <div class="section" id="sec8">
+            <h1>❓ Quiz</h1>
+            <p>Test kunnskapene dine!</p>
+            
+            <div id="quizContainer"></div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" id="checkBtn" onclick="checkQuiz()">Sjekk svarene</button>
+                <button class="btn btn-secondary" id="retryBtn" onclick="resetQuiz()" style="display: none;">Prøv igjen</button>
+            </div>
+            
+            <div class="quiz-result" id="resultBox" style="display: none;">
+                <p>Du fikk:</p>
+                <div class="quiz-score" id="resultScore">0/15</div>
+                <p id="resultMsg"></p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(7)">← Tilbake</button>
+                <button class="btn btn-primary" onclick="showSection(9)">Neste: Oppgaver →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 9: SKRIVEOPPGAVER -->
+        <div class="section" id="sec9">
+            <h1>📝 Skriveoppgaver</h1>
+            <p>Svar på oppgavene under. Svarene lagres automatisk.</p>
+            
+            <div class="box">
+                <h3>Oppgave 1: Alfa-henfall</h3>
+                <p>Forklar hva som skjer ved alfa-henfall. Hva sendes ut? Hvordan endres atomnummer og massetall? Skriv henfallsligningen for Ra-226 → Rn-222.</p>
+                <textarea id="oppg1" rows="6" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 2: Beta-henfall</h3>
+                <p>Forklar hva som skjer ved beta-henfall. Hva omdannes til hva i kjernen? Hvordan endres atomnummer og massetall? Gi et eksempel med henfallsligning.</p>
+                <textarea id="oppg2" rows="6" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 3: Sammenligning av strålingstyper</h3>
+                <p>Lag en tabell som sammenligner alfa, beta og gamma-stråling med hensyn til: hva det er, ladning, masse, rekkevidde, skjerming, og fare utvendig/innvendig.</p>
+                <textarea id="oppg3" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 4: Halveringstid-beregning</h3>
+                <p>En prøve inneholder 1600 gram av et radioaktivt stoff med halveringstid 4 timer. a) Hvor mye er igjen etter 12 timer? b) Hvor mye er igjen etter 24 timer? Vis utregningen.</p>
+                <textarea id="oppg4" rows="6" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 5: Radon i norske hjem</h3>
+                <p>Forklar hva radon er, hvor det kommer fra, hvorfor det er farlig, og hvilke tiltak man kan gjøre for å redusere radon i et hus. Hva er tiltaksgrensen i Norge?</p>
+                <textarea id="oppg5" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 6: Bruksområder for radioaktivitet</h3>
+                <p>Beskriv minst 3 nyttige bruksområder for radioaktivitet eller radioaktive isotoper. For hvert bruksområde, forklar hvilken isotop som brukes og hvorfor den er egnet.</p>
+                <textarea id="oppg6" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="downloadAnswers()">📥 Last ned svar</button>
+                <a href="index.html" class="btn btn-primary" style="display: inline-block; text-decoration: none; margin-left: 15px;">✓ Fullfør modul</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // === NAVIGATION ===
+        let currentSection = 0;
+        function showSection(idx) {
+            document.querySelectorAll('.section').forEach((s, i) => s.classList.toggle('active', i === idx));
+            document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+            currentSection = idx;
+            document.getElementById('progressLabel').textContent = Math.round((idx / 8) * 100) + '%';
+            window.scrollTo(0, 0);
+            
+            if (idx === 1) initAlfa();
+            if (idx === 2) initBeta();
+            if (idx === 3) initGamma();
+            if (idx === 4) initShield();
+            if (idx === 5) initHalv();
+        }
+        
+        // === ISOTOPE DATA ===
+        const alfaData = [
+            { mor: 'U-238', datter: 'Th-234', morZ: 92, morA: 238, datterZ: 90, datterA: 234 },
+            { mor: 'Ra-226', datter: 'Rn-222', morZ: 88, morA: 226, datterZ: 86, datterA: 222 },
+            { mor: 'Rn-222', datter: 'Po-218', morZ: 86, morA: 222, datterZ: 84, datterA: 218 },
+            { mor: 'Po-210', datter: 'Pb-206', morZ: 84, morA: 210, datterZ: 82, datterA: 206 }
+        ];
+        const betaData = [
+            { mor: 'C-14', datter: 'N-14', morZ: 6, morA: 14, datterZ: 7, datterA: 14 },
+            { mor: 'H-3', datter: 'He-3', morZ: 1, morA: 3, datterZ: 2, datterA: 3 },
+            { mor: 'I-131', datter: 'Xe-131', morZ: 53, morA: 131, datterZ: 54, datterA: 131 },
+            { mor: 'Cs-137', datter: 'Ba-137', morZ: 55, morA: 137, datterZ: 56, datterA: 137 }
+        ];
+        
+        let alfaIdx = 0, betaIdx = 0;
+        let alfaAnim, betaAnim, gammaAnim, shieldAnim;
+        let alfaPos = 0, betaPos = 0, gammaPos = 0;
+        let alfaActive = false, betaActive = false, gammaActive = false;
+        let tick = 0;
+        
+        function selectAlfa(idx) {
+            alfaIdx = idx;
+            document.querySelectorAll('#alfaSelector .isotope-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+            document.getElementById('alfaMor').textContent = alfaData[idx].mor;
+            document.getElementById('alfaDatter').textContent = alfaData[idx].datter;
+            resetAlfa();
+        }
+        
+        function selectBeta(idx) {
+            betaIdx = idx;
+            document.querySelectorAll('#betaSelector .isotope-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+            document.getElementById('betaMor').textContent = betaData[idx].mor;
+            document.getElementById('betaDatter').textContent = betaData[idx].datter;
+            resetBeta();
+        }
+        
+        // === ALFA SIMULATION ===
+        function initAlfa() {
+            const canvas = document.getElementById('alfaCanvas');
+            if (!canvas) return;
+            drawAlfa();
+        }
+        
+        function drawAlfa() {
+            const canvas = document.getElementById('alfaCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            
+            ctx.fillStyle = '#050510';
+            ctx.fillRect(0, 0, W, H);
+            
+            const d = alfaData[alfaIdx];
+            const nucleusX = 150, nucleusY = H/2;
+            const radius = alfaActive ? 45 : 55;
+            
+            // Draw nucleus
+            ctx.fillStyle = '#cc3333';
+            ctx.beginPath();
+            ctx.arc(nucleusX, nucleusY, radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw nucleons
+            const nucleonCount = alfaActive ? 8 : 12;
+            for (let i = 0; i < nucleonCount; i++) {
+                const angle = (tick * 0.02 + i * (6.28 / nucleonCount));
+                const r = radius * 0.6;
+                const x = nucleusX + Math.cos(angle) * r;
+                const y = nucleusY + Math.sin(angle) * r;
+                ctx.fillStyle = i % 2 === 0 ? '#ff6666' : '#6666ff';
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Labels
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(alfaActive ? d.datter : d.mor, nucleusX, nucleusY - radius - 25);
+            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#ff9900';
+            ctx.fillText(`Z = ${alfaActive ? d.datterZ : d.morZ}`, nucleusX, nucleusY + radius + 25);
+            ctx.fillStyle = '#00ffff';
+            ctx.fillText(`A = ${alfaActive ? d.datterA : d.morA}`, nucleusX, nucleusY + radius + 42);
+            
+            // Alpha particle
+            if (alfaActive && alfaPos > 0) {
+                const ax = nucleusX + alfaPos;
+                const ay = nucleusY - alfaPos * 0.3;
+                
+                ctx.fillStyle = '#ffff00';
+                ctx.beginPath();
+                ctx.arc(ax, ay, 28, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 2p + 2n
+                ctx.fillStyle = '#ff4444';
+                ctx.beginPath(); ctx.arc(ax - 8, ay - 8, 8, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(ax + 8, ay - 8, 8, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#4444ff';
+                ctx.beginPath(); ctx.arc(ax - 8, ay + 8, 8, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(ax + 8, ay + 8, 8, 0, Math.PI * 2); ctx.fill();
+                
+                ctx.fillStyle = '#ffff00';
+                ctx.font = '12px sans-serif';
+                ctx.fillText('α (⁴₂He)', ax, ay + 50);
+            }
+            
+            // Result box
+            ctx.fillStyle = '#111';
+            ctx.fillRect(550, 50, 200, 200);
+            ctx.strokeStyle = '#ff4444';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(550, 50, 200, 200);
+            
+            ctx.fillStyle = '#ff4444';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('RESULTAT', 650, 80);
+            
+            ctx.fillStyle = '#888';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Atomnummer (Z):', 650, 110);
+            ctx.fillStyle = '#ff9900';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.fillText(`${d.morZ} → ${d.datterZ} (−2)`, 650, 135);
+            
+            ctx.fillStyle = '#888';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Massetall (A):', 650, 170);
+            ctx.fillStyle = '#00ffff';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.fillText(`${d.morA} → ${d.datterA} (−4)`, 650, 195);
+            
+            ctx.fillStyle = '#44cc88';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Stoppes av: PAPIR', 650, 235);
+            
+            // Paper shield
+            ctx.fillStyle = '#dddddd';
+            ctx.fillRect(480, 80, 15, 140);
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Papir', 487, 240);
+            
+            if (alfaActive && alfaPos > 280) {
+                ctx.fillStyle = '#ff4444';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.fillText('STOPPET!', 380, H/2);
+            }
+            
+            tick++;
+            if (alfaActive && alfaPos < 300) {
+                alfaPos += 5;
+            }
+            
+            alfaAnim = requestAnimationFrame(drawAlfa);
+        }
+        
+        function startAlfa() {
+            alfaActive = true;
+            alfaPos = 0;
+        }
+        
+        function resetAlfa() {
+            alfaActive = false;
+            alfaPos = 0;
+        }
+        
+        // === BETA SIMULATION ===
+        function initBeta() {
+            const canvas = document.getElementById('betaCanvas');
+            if (!canvas) return;
+            drawBeta();
+        }
+        
+        function drawBeta() {
+            const canvas = document.getElementById('betaCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            
+            ctx.fillStyle = '#050510';
+            ctx.fillRect(0, 0, W, H);
+            
+            const d = betaData[betaIdx];
+            const nucleusX = 150, nucleusY = H/2;
+            
+            // Draw nucleus
+            ctx.fillStyle = '#0066aa';
+            ctx.beginPath();
+            ctx.arc(nucleusX, nucleusY, 50, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Blinking neutron becoming proton
+            if (!betaActive) {
+                ctx.fillStyle = tick % 20 < 10 ? '#4444ff' : '#ff4444';
+                ctx.beginPath();
+                ctx.arc(nucleusX, nucleusY - 20, 12, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Other nucleons
+            for (let i = 0; i < 5; i++) {
+                const angle = tick * 0.02 + i * 1.26 + 0.5;
+                const x = nucleusX + Math.cos(angle) * 25;
+                const y = nucleusY + Math.sin(angle) * 25;
+                ctx.fillStyle = i < (betaActive ? 3 : 2) ? '#ff6666' : '#6666ff';
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Labels
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(betaActive ? d.datter : d.mor, nucleusX, nucleusY - 70);
+            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#ff9900';
+            ctx.fillText(`Z = ${betaActive ? d.datterZ : d.morZ}`, nucleusX, nucleusY + 75);
+            ctx.fillStyle = '#00ffff';
+            ctx.fillText(`A = ${d.morA}`, nucleusX, nucleusY + 92);
+            
+            // Beta particle
+            if (betaActive && betaPos > 0) {
+                const bx = nucleusX + betaPos;
+                const by = nucleusY - betaPos * 0.2;
+                
+                ctx.fillStyle = '#00ffff';
+                ctx.beginPath();
+                ctx.arc(bx, by, 14 + Math.sin(tick * 0.3) * 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillText('e⁻', bx, by + 5);
+                
+                ctx.fillStyle = '#00ffff';
+                ctx.font = '11px sans-serif';
+                ctx.fillText('β⁻', bx, by + 35);
+            }
+            
+            // Result box
+            ctx.fillStyle = '#111';
+            ctx.fillRect(550, 50, 200, 200);
+            ctx.strokeStyle = '#00aaff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(550, 50, 200, 200);
+            
+            ctx.fillStyle = '#00aaff';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('RESULTAT', 650, 80);
+            
+            ctx.fillStyle = '#888';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Atomnummer (Z):', 650, 110);
+            ctx.fillStyle = '#ff9900';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.fillText(`${d.morZ} → ${d.datterZ} (+1)`, 650, 135);
+            
+            ctx.fillStyle = '#888';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Massetall (A):', 650, 170);
+            ctx.fillStyle = '#00ffff';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.fillText(`${d.morA} → ${d.datterA} (0)`, 650, 195);
+            
+            ctx.fillStyle = '#44cc88';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Stoppes av: ALUMINIUM', 650, 235);
+            
+            // Aluminum shield
+            ctx.fillStyle = '#888888';
+            ctx.fillRect(480, 80, 25, 140);
+            ctx.fillStyle = '#666';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Alu', 492, 240);
+            
+            if (betaActive && betaPos > 300) {
+                ctx.fillStyle = '#00aaff';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.fillText('STOPPET!', 380, H/2);
+            }
+            
+            tick++;
+            if (betaActive && betaPos < 320) {
+                betaPos += 8;
+            }
+            
+            betaAnim = requestAnimationFrame(drawBeta);
+        }
+        
+        function startBeta() {
+            betaActive = true;
+            betaPos = 0;
+        }
+        
+        function resetBeta() {
+            betaActive = false;
+            betaPos = 0;
+        }
+        
+        // === GAMMA SIMULATION ===
+        function initGamma() {
+            const canvas = document.getElementById('gammaCanvas');
+            if (!canvas) return;
+            drawGamma();
+        }
+        
+        function drawGamma() {
+            const canvas = document.getElementById('gammaCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            
+            ctx.fillStyle = '#050510';
+            ctx.fillRect(0, 0, W, H);
+            
+            const nucleusX = 150, nucleusY = H/2;
+            
+            // Draw nucleus (pulsing if not active)
+            const pulseColor = gammaActive ? '#6608' : `hsl(280, 60%, ${50 + Math.sin(tick * 0.1) * 20}%)`;
+            ctx.fillStyle = pulseColor;
+            ctx.beginPath();
+            ctx.arc(nucleusX, nucleusY, 45, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Nucleons
+            for (let i = 0; i < 6; i++) {
+                const angle = tick * 0.015 + i * 1.05;
+                const x = nucleusX + Math.cos(angle) * 22;
+                const y = nucleusY + Math.sin(angle) * 22;
+                ctx.fillStyle = i % 2 === 0 ? '#ff6666' : '#6666ff';
+                ctx.beginPath();
+                ctx.arc(x, y, 7, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Labels
+            ctx.fillStyle = '#fff';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(gammaActive ? 'Stabil kjerne' : 'Eksitert kjerne', nucleusX, nucleusY - 65);
+            ctx.fillStyle = '#aa44ff';
+            ctx.font = '11px sans-serif';
+            ctx.fillText(gammaActive ? '(lavere energi)' : '(høy energi)', nucleusX, nucleusY - 50);
+            
+            ctx.fillStyle = '#888';
+            ctx.fillText('Z: uendret', nucleusX, nucleusY + 70);
+            ctx.fillText('A: uendret', nucleusX, nucleusY + 85);
+            
+            // Gamma ray
+            if (gammaActive && gammaPos > 0) {
+                ctx.strokeStyle = '#ff00ff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                for (let i = 0; i < 15; i++) {
+                    const x = nucleusX + 60 + gammaPos + i * 8;
+                    const y = nucleusY + Math.sin((i + tick * 0.4) * 1.5) * 15;
+                    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                
+                ctx.fillStyle = '#ff00ff';
+                ctx.font = '12px sans-serif';
+                ctx.fillText('γ-stråle', nucleusX + 100 + gammaPos, nucleusY + 45);
+            }
+            
+            // Result box
+            ctx.fillStyle = '#111';
+            ctx.fillRect(550, 60, 180, 180);
+            ctx.strokeStyle = '#aa44ff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(550, 60, 180, 180);
+            
+            ctx.fillStyle = '#aa44ff';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('RESULTAT', 640, 90);
+            
+            ctx.fillStyle = '#ff9900';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.fillText('Z: UENDRET', 640, 130);
+            
+            ctx.fillStyle = '#00ffff';
+            ctx.fillText('A: UENDRET', 640, 165);
+            
+            ctx.fillStyle = '#888';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Bare energi sendes ut', 640, 200);
+            
+            ctx.fillStyle = '#ff4444';
+            ctx.fillText('Stoppes av: TYKK BLY', 640, 225);
+            
+            // Lead shield
+            ctx.fillStyle = '#444444';
+            ctx.fillRect(480, 80, 40, 140);
+            ctx.fillStyle = '#666';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Bly', 500, 240);
+            
+            tick++;
+            if (gammaActive && gammaPos < 350) {
+                gammaPos += 10;
+            }
+            
+            gammaAnim = requestAnimationFrame(drawGamma);
+        }
+        
+        function startGamma() {
+            gammaActive = true;
+            gammaPos = 0;
+        }
+        
+        function resetGamma() {
+            gammaActive = false;
+            gammaPos = 0;
+        }
+        
+        // === SHIELD COMPARISON ===
+        let shieldType = 'alfa';
+        function initShield() {
+            drawShield();
+        }
+        
+        function showShield(type) {
+            shieldType = type;
+        }
+        
+        function drawShield() {
+            const canvas = document.getElementById('shieldCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            
+            ctx.fillStyle = '#050510';
+            ctx.fillRect(0, 0, W, H);
+            
+            // Radiation source
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(50, H/2, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('☢️', 50, H/2 + 5);
+            
+            // Shields
+            // Paper
+            ctx.fillStyle = '#dddddd';
+            ctx.fillRect(150, 40, 15, H - 80);
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Papir', 157, H - 25);
+            
+            // Aluminum
+            ctx.fillStyle = '#888888';
+            ctx.fillRect(300, 40, 25, H - 80);
+            ctx.fillText('Aluminium', 312, H - 25);
+            
+            // Lead
+            ctx.fillStyle = '#444444';
+            ctx.fillRect(500, 40, 45, H - 80);
+            ctx.fillText('Bly', 522, H - 25);
+            
+            // Radiation particle/wave
+            const t = tick * 0.1;
+            let stopX = W;
+            let color = '#fff';
+            
+            if (shieldType === 'alfa') {
+                stopX = 140;
+                color = '#ff4444';
+            } else if (shieldType === 'beta') {
+                stopX = 290;
+                color = '#00aaff';
+            } else {
+                stopX = 700;
+                color = '#aa44ff';
+            }
+            
+            const x = 70 + ((t * 50) % (stopX - 70));
+            
+            ctx.fillStyle = color;
+            if (shieldType === 'gamma') {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                for (let i = 0; i < 8; i++) {
+                    const px = x + i * 6;
+                    const py = H/2 + Math.sin((i + tick * 0.3) * 2) * 10;
+                    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+            } else {
+                ctx.beginPath();
+                ctx.arc(x, H/2, shieldType === 'alfa' ? 12 : 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Labels
+            ctx.fillStyle = color;
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(shieldType === 'alfa' ? 'α Alfa - stoppes av papir' : 
+                        shieldType === 'beta' ? 'β Beta - stoppes av aluminium' : 
+                        'γ Gamma - trenger bly', 600, 30);
+            
+            tick++;
+            shieldAnim = requestAnimationFrame(drawShield);
+        }
+        
+        // === HALVERINGSTID ===
+        function initHalv() {
+            // Create particle grid
+            const grid = document.getElementById('particleGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 100; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle active';
+                grid.appendChild(p);
+            }
+            updateHalv();
+        }
+        
+        function updateHalv() {
+            const n = parseInt(document.getElementById('halvSlider').value);
+            const remaining = Math.round(100 / Math.pow(2, n));
+            
+            document.getElementById('halvVal').textContent = n;
+            document.getElementById('remaining').textContent = remaining + '%';
+            document.getElementById('decayed').textContent = (100 - remaining) + '%';
+            document.getElementById('formula').textContent = remaining;
+            
+            // Update particles
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach((p, i) => {
+                p.classList.toggle('active', i < remaining);
+                p.classList.toggle('decayed', i >= remaining);
+            });
+        }
+        
+        // === FLASHCARDS ===
+        const flashcards = [
+            { q: 'Hva er en alfapartikkel?', a: 'Heliumkjerne: 2 protoner + 2 nøytroner' },
+            { q: 'Ved alfa: ΔZ?', a: '−2 (mister 2 protoner)' },
+            { q: 'Ved alfa: ΔA?', a: '−4 (mister 4 nukleoner)' },
+            { q: 'Hva stoppes alfa av?', a: 'Papir eller hud' },
+            { q: 'Er alfa farlig innvendig?', a: 'JA - svært farlig hvis pustet inn!' },
+            { q: 'Hva skjer ved beta-henfall?', a: 'Nøytron → proton + elektron + antinøytrino' },
+            { q: 'Ved beta: ΔZ?', a: '+1 (får et ekstra proton)' },
+            { q: 'Ved beta: ΔA?', a: '0 (uendret)' },
+            { q: 'Hva stoppes beta av?', a: 'Noen mm aluminium' },
+            { q: 'Hva er gammastråling?', a: 'Elektromagnetisk stråling (fotoner)' },
+            { q: 'Ved gamma: ΔZ og ΔA?', a: 'Begge uendret (bare energi sendes ut)' },
+            { q: 'Hva stoppes gamma av?', a: 'Flere cm bly eller meter betong' },
+            { q: 'Hva er halveringstid?', a: 'Tiden til halvparten har henfallt' },
+            { q: 'Halveringstid radon-222?', a: '3.8 dager' },
+            { q: 'Halveringstid karbon-14?', a: '5730 år' },
+            { q: 'Hva er radon?', a: 'Radioaktiv edelgass fra uran i bakken' },
+            { q: 'Radon-grense Norge?', a: '100 Bq/m³ (tiltaksgrense)' },
+            { q: 'Hvorfor er radon farlig?', a: 'Usynlig gass - alfastråling i lungene' },
+            { q: 'Hva måles aktivitet i?', a: 'Becquerel (Bq) = henfall/sekund' },
+            { q: 'Hva brukes C-14 til?', a: 'Karbondatering av organisk materiale' }
+        ];
+        
+        let currentCard = 0;
+        
+        function renderCard() {
+            document.getElementById('flashQ').textContent = flashcards[currentCard].q;
+            document.getElementById('flashA').textContent = flashcards[currentCard].a;
+            document.getElementById('flashCounter').textContent = `Kort ${currentCard + 1} av ${flashcards.length}`;
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+        
+        function flipCard() {
+            document.getElementById('flashcard').classList.toggle('flipped');
+        }
+        
+        function nextCard() {
+            currentCard = (currentCard + 1) % flashcards.length;
+            renderCard();
+        }
+        
+        function prevCard() {
+            currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
+            renderCard();
+        }
+        
+        function shuffleCards() {
+            currentCard = Math.floor(Math.random() * flashcards.length);
+            renderCard();
+        }
+        
+        // === QUIZ ===
+        const quizQuestions = [
+            { q: 'Ved alfa-henfall synker atomnr med?', o: ['1', '2', '4', '0'], c: 1 },
+            { q: 'Ved alfa-henfall synker massetall med?', o: ['1', '2', '4', '0'], c: 2 },
+            { q: 'Hva er en alfapartikkel?', o: ['Elektron', 'Proton', 'Heliumkjerne', 'Foton'], c: 2 },
+            { q: 'Alfa stoppes av?', o: ['Betong', 'Bly', 'Aluminium', 'Papir'], c: 3 },
+            { q: 'Ved beta-henfall endres atomnr med?', o: ['-2', '-1', '+1', '+2'], c: 2 },
+            { q: 'Ved beta-henfall endres massetall med?', o: ['-4', '-1', '0', '+1'], c: 2 },
+            { q: 'Hva skjer i beta-henfall?', o: ['Proton→nøytron', 'Nøytron→proton', 'Elektron fanges', 'Foton sendes'], c: 1 },
+            { q: 'Beta stoppes av?', o: ['Papir', 'Aluminium', 'Bly', 'Ingenting'], c: 1 },
+            { q: 'Ved gamma endres atomnr med?', o: ['-2', '-1', '0', '+1'], c: 2 },
+            { q: 'Gamma stoppes av?', o: ['Papir', 'Aluminium', 'Bly/betong', 'Ingenting'], c: 2 },
+            { q: 'Hva er halveringstid?', o: ['Levetid', 'Tid til 50% henfall', 'Tid til 100% henfall', 'Reaksjonstid'], c: 1 },
+            { q: 'Halveringstid radon-222?', o: ['3.8 timer', '3.8 dager', '3.8 år', '38 år'], c: 1 },
+            { q: 'Etter 2 halveringstider gjenstår?', o: ['75%', '50%', '25%', '0%'], c: 2 },
+            { q: 'Hva er radon?', o: ['Metall', 'Væske', 'Gass', 'Fast stoff'], c: 2 },
+            { q: 'Radon-grense i Norge?', o: ['10 Bq/m³', '100 Bq/m³', '1000 Bq/m³', '10000 Bq/m³'], c: 1 }
+        ];
+        
+        let quizAnswers = {};
+        let quizChecked = false;
+        
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = quizQuestions.map((q, qi) => `
+                <div class="quiz-question" id="q${qi}">
+                    <div class="quiz-text"><strong>${qi + 1}.</strong> ${q.q}</div>
+                    <div class="quiz-options">
+                        ${q.o.map((opt, oi) => `
+                            <div class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q${qi}o${oi}">${opt}</div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function selectAnswer(qi, oi) {
+            if (quizChecked) return;
+            quizAnswers[qi] = oi;
+            quizQuestions[qi].o.forEach((_, i) => {
+                document.getElementById(`q${qi}o${i}`).classList.toggle('selected', i === oi);
+            });
+        }
+        
+        function checkQuiz() {
+            quizChecked = true;
+            let score = 0;
+            
+            quizQuestions.forEach((q, qi) => {
+                const qEl = document.getElementById(`q${qi}`);
+                if (quizAnswers[qi] === q.c) {
+                    score++;
+                    qEl.classList.add('correct');
+                } else {
+                    qEl.classList.add('wrong');
+                }
+                document.getElementById(`q${qi}o${q.c}`).classList.add('correct-answer');
+                if (quizAnswers[qi] !== undefined && quizAnswers[qi] !== q.c) {
+                    document.getElementById(`q${qi}o${quizAnswers[qi]}`).classList.add('wrong-answer');
+                }
+            });
+            
+            const resultBox = document.getElementById('resultBox');
+            const resultScore = document.getElementById('resultScore');
+            resultBox.style.display = 'block';
+            resultScore.textContent = `${score}/${quizQuestions.length}`;
+            resultScore.className = 'quiz-score ' + (score >= 12 ? 'good' : score >= 8 ? 'medium' : 'bad');
+            document.getElementById('resultMsg').textContent = score >= 12 ? '🎉 Utmerket!' : score >= 8 ? '👍 Bra!' : '📚 Øv mer!';
+            
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('retryBtn').style.display = 'inline-block';
+            
+            if (score >= 10) localStorage.setItem('naturfag_rad_done', 'true');
+        }
+        
+        function resetQuiz() {
+            quizAnswers = {};
+            quizChecked = false;
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('checkBtn').style.display = 'inline-block';
+            document.getElementById('retryBtn').style.display = 'none';
+            renderQuiz();
+        }
+        
+        // === INIT ===
+        renderCard();
+        renderQuiz();
+        loadAnswers();
+        
+        // === OPPGAVER ===
+        function saveAnswers() {
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('oppg' + i);
+                if (el) localStorage.setItem('rad_oppg' + i, el.value);
+            }
+        }
+        
+        function loadAnswers() {
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('oppg' + i);
+                const saved = localStorage.getItem('rad_oppg' + i);
+                if (el && saved) el.value = saved;
+            }
+        }
+        
+        function downloadAnswers() {
+            const name = localStorage.getItem('naturfag_student') || 'Elev';
+            let text = 'SKRIVEOPPGAVER - MODUL 2: RADIOAKTIVITET\n';
+            text += 'Navn: ' + name + '\n';
+            text += 'Dato: ' + new Date().toLocaleDateString('no-NO') + '\n';
+            text += '='.repeat(50) + '\n\n';
+            
+            const titles = [
+                'Oppgave 1: Alfa-henfall',
+                'Oppgave 2: Beta-henfall',
+                'Oppgave 3: Sammenligning av strålingstyper',
+                'Oppgave 4: Halveringstid-beregning',
+                'Oppgave 5: Radon i norske hjem',
+                'Oppgave 6: Bruksområder for radioaktivitet'
+            ];
+            
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('oppg' + i);
+                text += titles[i-1] + '\n' + '-'.repeat(40) + '\n';
+                text += (el ? el.value : '') + '\n\n';
+            }
+            
+            const blob = new Blob([text], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'radioaktivitet-oppgaver-' + name.replace(/\s/g, '_') + '.txt';
+            a.click();
+        }
+    </script>
+</body>
+</html>

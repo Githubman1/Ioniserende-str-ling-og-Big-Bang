@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul 3: Big Bang og universet</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #050510 0%, #0a1628 50%, #0d0d2a 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        
+        .topnav {
+            background: rgba(0,0,0,0.4);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .topnav a { color: #888; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .topnav a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .nav-title { color: #00aaff; font-weight: bold; font-size: 1.1rem; }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            padding: 20px 30px;
+            background: rgba(0,0,0,0.3);
+            overflow-x: auto;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .tab {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-radius: 10px;
+            color: #888;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .tab:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .tab.active { background: #00aaff; color: #000; }
+        
+        .content { padding: 30px; max-width: 1000px; margin: 0 auto; }
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        h1 { font-size: 2rem; margin-bottom: 20px; color: #00aaff; }
+        h2 { font-size: 1.5rem; margin: 30px 0 15px; color: #33bbff; }
+        h3 { font-size: 1.2rem; margin: 25px 0 12px; color: #66ccff; }
+        p { line-height: 1.8; margin-bottom: 15px; }
+        ul, ol { margin: 15px 0 15px 25px; line-height: 2; }
+        
+        .box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .box-highlight { border-left: 4px solid #00aaff; background: rgba(0,170,255,0.1); }
+        .box-success { border-left: 4px solid #44cc88; background: rgba(68,204,136,0.1); }
+        .box-warning { border-left: 4px solid #ffaa00; background: rgba(255,170,0,0.1); }
+        
+        .simulator {
+            background: #050510;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 2px solid rgba(0,170,255,0.3);
+        }
+        .sim-title { color: #00aaff; font-size: 1.1rem; margin-bottom: 20px; }
+        canvas { border-radius: 10px; display: block; margin: 15px 0; }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary { background: #00aaff; color: #000; }
+        .btn-primary:hover { background: #33bbff; }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        
+        /* Timeline */
+        .timeline { position: relative; padding-left: 30px; }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #ff4444, #ff9900, #ffff00, #44cc88, #00aaff, #aa44ff);
+        }
+        .timeline-item {
+            position: relative;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 25px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--dot-color, #00aaff);
+            border: 3px solid #0a0a14;
+        }
+        .timeline-time { color: var(--dot-color, #00aaff); font-weight: bold; font-size: 0.9rem; }
+        .timeline-title { font-size: 1.1rem; margin: 8px 0; color: #fff; }
+        .timeline-desc { color: #888; font-size: 0.95rem; }
+        
+        /* Element cards */
+        .element-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .element-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid var(--el-color, #333);
+        }
+        .element-symbol { font-size: 2.5rem; font-weight: bold; color: var(--el-color); }
+        .element-name { color: #fff; margin: 10px 0 5px; }
+        .element-source { color: #888; font-size: 0.85rem; }
+        
+        /* Flashcards */
+        .flashcard-container { perspective: 1000px; margin: 30px 0; }
+        .flashcard {
+            width: 100%;
+            height: 250px;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .flashcard.flipped { transform: rotateY(180deg); }
+        .flash-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+        }
+        .flash-front { background: linear-gradient(135deg, #0a1628, #1a2638); border: 2px solid rgba(0,170,255,0.3); }
+        .flash-back { background: linear-gradient(135deg, #143, #254); border: 2px solid rgba(68,204,136,0.3); transform: rotateY(180deg); }
+        .flash-label { font-size: 0.8rem; color: #888; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .flash-text { font-size: 1.3rem; line-height: 1.6; }
+        .flash-hint { font-size: 0.8rem; color: #666; margin-top: 20px; }
+        .flash-controls { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .flash-btn { padding: 12px 25px; border: none; border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; }
+        .flash-btn:hover { background: #00aaff; color: #000; }
+        .flash-counter { text-align: center; color: #888; margin-bottom: 15px; }
+        
+        /* Quiz */
+        .quiz-question { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 25px; margin: 20px 0; }
+        .quiz-question.correct { border-color: #44cc88; background: rgba(68,204,136,0.1); }
+        .quiz-question.wrong { border-color: #ff4444; background: rgba(255,68,68,0.1); }
+        .quiz-text { font-size: 1.1rem; margin-bottom: 20px; }
+        .quiz-options { display: grid; gap: 10px; }
+        .quiz-option { padding: 15px 20px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; transition: all 0.3s; }
+        .quiz-option:hover { border-color: #00aaff; background: rgba(0,170,255,0.1); }
+        .quiz-option.selected { border-color: #00ffff; background: rgba(0,255,255,0.1); }
+        .quiz-option.correct-answer { border-color: #44cc88; background: rgba(68,204,136,0.2); }
+        .quiz-option.wrong-answer { border-color: #ff4444; background: rgba(255,68,68,0.2); }
+        
+        .quiz-result { text-align: center; padding: 30px; background: rgba(255,255,255,0.05); border-radius: 15px; margin: 30px 0; }
+        .quiz-score { font-size: 3rem; font-weight: bold; }
+        .quiz-score.good { color: #44cc88; }
+        .quiz-score.medium { color: #ffaa00; }
+        .quiz-score.bad { color: #ff4444; }
+        
+        /* Stars background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(255,255,255,0.05); color: #00aaff; }
+        
+        @media (max-width: 600px) {
+            .tabs { padding: 15px; }
+            .tab { padding: 10px 15px; font-size: 0.8rem; }
+            .content { padding: 20px 15px; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas class="stars" id="starsCanvas"></canvas>
+    
+    <nav class="topnav">
+        <a href="index.html">← Tilbake til oversikt</a>
+        <span class="nav-title">🌌 Modul 3: Big Bang</span>
+        <span id="progressLabel">0%</span>
+    </nav>
+    
+    <div class="tabs">
+        <button class="tab active" onclick="showSection(0)">📖 Introduksjon</button>
+        <button class="tab" onclick="showSection(1)">⏰ Tidslinjen</button>
+        <button class="tab" onclick="showSection(2)">📡 CMB</button>
+        <button class="tab" onclick="showSection(3)">🔴 Rødforskyvning</button>
+        <button class="tab" onclick="showSection(4)">⭐ Stjernestøv</button>
+        <button class="tab" onclick="showSection(5)">🌑 Mørk materie</button>
+        <button class="tab" onclick="showSection(6)">🃏 Flashcards</button>
+        <button class="tab" onclick="showSection(7)">❓ Quiz</button>
+        <button class="tab" onclick="showSection(8)">📝 Oppgaver</button>
+    </div>
+    
+    <div class="content">
+        <!-- SEKSJON 0: INTRODUKSJON -->
+        <div class="section active" id="sec0">
+            <h1>🌌 Big Bang og universets historie</h1>
+            
+            <div class="box box-highlight">
+                <h3>🎯 Læringsmål</h3>
+                <ul>
+                    <li>Beskrive Big Bang-teorien og universets utvikling</li>
+                    <li>Forklare bevisene for Big Bang: CMB og rødforskyvning</li>
+                    <li>Forstå hvor grunnstoffene i universet kommer fra</li>
+                    <li>Kjenne til mørk materie og mørk energi</li>
+                </ul>
+            </div>
+            
+            <h2>Hva er Big Bang?</h2>
+            <p>
+                <strong>Big Bang</strong> er den vitenskapelige teorien om universets opprinnelse. 
+                For ca. <strong>13.8 milliarder år siden</strong> var alt som finnes - all materie, 
+                energi, og selve rommet - samlet i et uendelig lite og uendelig tett punkt kalt en <strong>singularitet</strong>.
+            </p>
+            
+            <p>
+                Så skjedde noe - universet begynte å ekspandere. Ikke som en eksplosjon i rommet, 
+                men som en ekspansjon <strong>av selve rommet</strong>. Denne ekspansjonen fortsetter den dag i dag.
+            </p>
+            
+            <div class="box">
+                <h3>💡 Viktig å forstå</h3>
+                <p>Big Bang var <strong>ikke</strong> en eksplosjon i et eksisterende rom. 
+                Det var begynnelsen på <strong>tid, rom, materie og energi</strong> - alt vi kjenner. 
+                Å spørre "hva var før Big Bang?" gir like lite mening som å spørre "hva er nord for Nordpolen?"</p>
+            </div>
+            
+            <h2>Universets størrelse og alder</h2>
+            <div class="box">
+                <table>
+                    <tr>
+                        <td><strong>Universets alder</strong></td>
+                        <td>13.8 milliarder år</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Observerbart univers</strong></td>
+                        <td>Ca. 93 milliarder lysår i diameter</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Antall galakser</strong></td>
+                        <td>Minst 200 milliarder</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Antall stjerner</strong></td>
+                        <td>Ca. 10²⁴ (1 000 000 000 000 000 000 000 000)</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="box box-warning">
+                <h3>⏰ Perspektiv: Universets historie på 1 år</h3>
+                <p>Hvis universets historie var ett år, med Big Bang 1. januar kl. 00:00:</p>
+                <ul>
+                    <li><strong>1. januar:</strong> Big Bang</li>
+                    <li><strong>13. september:</strong> Solsystemet dannes</li>
+                    <li><strong>25. september:</strong> Livet oppstår på jorden</li>
+                    <li><strong>31. desember, 23:59:46:</strong> Mennesket oppstår</li>
+                    <li><strong>31. desember, 23:59:59:</strong> All menneskelig historie</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" onclick="showSection(1)">Neste: Tidslinjen →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 1: TIDSLINJEN -->
+        <div class="section" id="sec1">
+            <h1>⏰ Universets tidslinje</h1>
+            
+            <p>Fra Big Bang til i dag - de viktigste hendelsene i universets historie:</p>
+            
+            <div class="timeline">
+                <div class="timeline-item" style="--dot-color: #ff4444;">
+                    <div class="timeline-time">t = 0</div>
+                    <div class="timeline-title">🔥 Big Bang - Singulariteten</div>
+                    <div class="timeline-desc">Alt som finnes var samlet i et uendelig lite, uendelig tett punkt. Rommet, tiden, materien og energien oppstår.</div>
+                </div>
+                
+                <div class="timeline-item" style="--dot-color: #ff6633;">
+                    <div class="timeline-time">t = 10⁻⁴³ sekunder</div>
+                    <div class="timeline-title">⚡ Planck-tiden</div>
+                    <div class="timeline-desc">Den tidligste tiden vi kan beskrive med fysikk. Før dette gjelder ikke vanlige fysiske lover. Temp: 10³² K.</div>
+                </div>
+                
+                <div class="timeline-item" style="--dot-color: #ff9900;">
+                    <div class="timeline-time">t = 10⁻³⁶ sekunder</div>
+                    <div class="timeline-title">💥 Kosmisk inflasjon</div>
+                    <div class="timeline-desc">Universet ekspanderte ekstremt raskt - fra mindre enn et atom til større enn en galakse på en brøkdel av et sekund.</div>
+                </div>
+                
+                <div class="timeline-item" style="--dot-color: #ffcc00;">
+                    <div class="timeline-time">t = 10⁻⁶ sekunder</div>
+                    <div class="timeline-title">⚛️ Kvarker danner protoner og nøytroner</div>
+                    <div class="timeline-desc">Universet er nå kaldt nok til at kvarker kan binde seg sammen til protoner og nøytroner.</div>
+                </div>
+                
+                <div class="timeline-item" style="--dot-color: #aaff00;">
+                    <div class="timeline-time">t = 3 minutter</div>
+                    <div class="timeline-title">🧪 Primordial nukleosyntese</div>
+                    <div class="timeline-desc">De første atomkjernene dannes: 75% hydrogen, 25% helium, spor av litium. Ingen tyngre grunnstoffer ennå!</div>
+                </div>
+                
+                <div class="timeline-item" style="--dot-color: #00ff88;">
+                    <div class="timeline-time">t = 380 000 år</div>
+                    <div class="timeline-title">💡 CMB frigjøres - Universet blir gjennomsiktig</div>
+                    <div class="timeline-desc">Temperaturen synker til 3000 K. Elektroner binder seg til kjerner → nøytrale atomer. Lyset kan nå reise fritt!</div>
+                </div>
+                
+                <div class="timeline-item" style="--dot-color: #00aaff;">
+                    <div class="timeline-time">t = 200 millioner år</div>
+                    <div class="timeline-title">⭐ De første stjernene</div>
+                    <div class="timeline-desc">Store hydrogensky kollapser under egen tyngde. Kjernefusjon starter. De første stjernene lyser opp i mørket.</div>
+                </div>
+                
+                <div class="timeline-item" style="--dot-color: #4488ff;">
+                    <div class="timeline-time">t = 1 milliard år</div>
+                    <div class="timeline-title">🌀 De første galaksene</div>
+                    <div class="timeline-desc">Stjerner samler seg i galakser. Mørk materie hjelper gravitasjonen med å forme store strukturer.</div>
+                </div>
+                
+                <div class="timeline-item" style="--dot-color: #8844ff;">
+                    <div class="timeline-time">t = 9.2 milliarder år</div>
+                    <div class="timeline-title">🌍 Solsystemet dannes</div>
+                    <div class="timeline-desc">En sky av gass og støv kollapser og danner solen og planetene - inkludert jorden. 4.6 milliarder år siden.</div>
+                </div>
+                
+                <div class="timeline-item" style="--dot-color: #aa44ff;">
+                    <div class="timeline-time">t = 13.8 milliarder år</div>
+                    <div class="timeline-title">👋 I dag</div>
+                    <div class="timeline-desc">Du leser dette. Universet fortsetter å ekspandere, og ekspansjonen akselererer.</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(0)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(2)">Neste: CMB →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 2: CMB -->
+        <div class="section" id="sec2">
+            <h1>📡 Kosmisk bakgrunnsstråling (CMB)</h1>
+            
+            <div class="box box-highlight">
+                <h3>Det sterkeste beviset for Big Bang!</h3>
+                <p>
+                    <strong>CMB (Cosmic Microwave Background)</strong> er "ettergløden" fra Big Bang - 
+                    det eldste lyset i universet. Det ble frigjort 380 000 år etter Big Bang 
+                    og fyller hele universet i dag.
+                </p>
+            </div>
+            
+            <div class="simulator">
+                <div class="sim-title">📡 CMB-visualisering</div>
+                <canvas id="cmbCanvas" width="800" height="300" style="width: 100%; background: #000;"></canvas>
+                <p style="text-align: center; color: #888; margin-top: 10px;">
+                    Bittesmå temperaturvariasjoner (1 del per 100 000) som ble til galakser
+                </p>
+            </div>
+            
+            <h2>Hvorfor CMB oppstod</h2>
+            <ol>
+                <li><strong>Tidlig univers var ugjennomsiktig:</strong> Så varmt at elektroner ikke kunne binde seg til atomkjerner. Lyset ble konstant spredt.</li>
+                <li><strong>Universet kjølte seg ned:</strong> Etter 380 000 år var temperaturen ca. 3000 K - kjølig nok for nøytrale atomer.</li>
+                <li><strong>Lyset ble frigjort:</strong> Fotoner kunne nå reise fritt gjennom universet uten å bli spredt.</li>
+                <li><strong>Lyset reiser fremdeles:</strong> Vi ser det i dag som mikrobølgestråling fra alle retninger.</li>
+            </ol>
+            
+            <h2>Fakta om CMB</h2>
+            <div class="box">
+                <table>
+                    <tr>
+                        <td><strong>Temperatur</strong></td>
+                        <td>2.725 K (−270.4°C)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Opprinnelig temperatur</strong></td>
+                        <td>Ca. 3000 K</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bølgelengde</strong></td>
+                        <td>Mikrobølger (ca. 1 mm)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Retning</strong></td>
+                        <td>Kommer fra alle retninger - fyller hele himmelen</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Variasjoner</strong></td>
+                        <td>Kun 1 del per 100 000 (ble til galakser)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Oppdaget</strong></td>
+                        <td>1965 av Penzias og Wilson (Nobelpris 1978)</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="box box-success">
+                <h3>🔬 Hvorfor CMB beviser Big Bang</h3>
+                <ul>
+                    <li>CMB kommer fra <strong>alle retninger</strong> med nesten identisk temperatur</li>
+                    <li>Temperaturen og bølgelengden er <strong>nøyaktig som forutsagt</strong> av Big Bang-teorien</li>
+                    <li>De små variasjonene forklarer hvordan galakser kunne dannes</li>
+                    <li>Ingen annen teori kan forklare denne strålingen</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(1)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(3)">Neste: Rødforskyvning →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 3: RØDFORSKYVNING -->
+        <div class="section" id="sec3">
+            <h1>🔴 Rødforskyvning og Hubbles lov</h1>
+            
+            <div class="box box-highlight">
+                <h3>Beviset for at universet ekspanderer</h3>
+                <p>
+                    I 1929 oppdaget Edwin Hubble at nesten alle galakser beveger seg <strong>bort fra oss</strong>, 
+                    og jo lenger unna de er, jo raskere beveger de seg. Dette beviser at universet ekspanderer.
+                </p>
+            </div>
+            
+            <h2>Hva er rødforskyvning?</h2>
+            <p>
+                Når en lyskilde beveger seg bort fra oss, blir lysbølgene <strong>strukket</strong>.
+                Lengre bølgelengde betyr at lyset forskyves mot den røde enden av spekteret - derav navnet "rødforskyvning".
+            </p>
+            
+            <div class="simulator">
+                <div class="sim-title">🌊 Rødforskyvning visualisert</div>
+                <canvas id="redshiftCanvas" width="800" height="250" style="width: 100%; background: #050510;"></canvas>
+                <div style="display: flex; justify-content: space-around; margin-top: 15px;">
+                    <div style="text-align: center;">
+                        <div style="width: 30px; height: 30px; background: #4488ff; border-radius: 50%; margin: 0 auto;"></div>
+                        <span style="color: #4488ff;">Nær galakse</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="width: 30px; height: 30px; background: #ff4444; border-radius: 50%; margin: 0 auto;"></div>
+                        <span style="color: #ff4444;">Fjern galakse</span>
+                    </div>
+                </div>
+            </div>
+            
+            <h2>Hubbles lov</h2>
+            <div class="box" style="text-align: center;">
+                <p style="font-size: 2rem; color: #00ffff; margin: 20px 0;">v = H₀ × d</p>
+                <table style="text-align: left;">
+                    <tr>
+                        <td><strong>v</strong></td>
+                        <td>Galaksens hastighet bort fra oss (km/s)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>H₀</strong></td>
+                        <td>Hubbles konstant (ca. 70 km/s per megaparsec)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>d</strong></td>
+                        <td>Avstanden til galaksen</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="box box-warning">
+                <h3>⚠️ Viktig å forstå</h3>
+                <p>
+                    Galaksene <strong>flyr ikke gjennom rommet</strong> bort fra oss. 
+                    Det er <strong>selve rommet som ekspanderer</strong> mellom galaksene!
+                </p>
+                <p style="margin-top: 10px;">
+                    <strong>Analogi:</strong> Tenk på rosiner i en hevende bolle. 
+                    Når deigen hever, øker avstanden mellom alle rosinene - uten at rosinene selv beveger seg gjennom deigen.
+                </p>
+            </div>
+            
+            <h2>Hva betyr dette?</h2>
+            <ul>
+                <li>Universet ekspanderer - avstanden mellom galakser øker hele tiden</li>
+                <li>Jo lenger tilbake i tid vi ser, jo nærmere hverandre var alt</li>
+                <li>Spol vi tilbake langt nok, var alt samlet i ett punkt: Big Bang</li>
+                <li>Ekspansjonen <strong>akselererer</strong> - drevet av mørk energi</li>
+            </ul>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(2)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(4)">Neste: Stjernestøv →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 4: STJERNESTØV -->
+        <div class="section" id="sec4">
+            <h1>⭐ Grunnstoffenes opprinnelse - Stjernestøv</h1>
+            
+            <div class="box box-success" style="text-align: center;">
+                <h2 style="color: #ffcc00; margin: 0;">✨ Du er bokstavelig talt laget av STJERNESTØV! ✨</h2>
+                <p style="margin-top: 15px;">Hvert atom i kroppen din (unntatt hydrogen) ble laget inne i en stjerne eller i en eksploderende supernova.</p>
+            </div>
+            
+            <h2>Hvor kommer grunnstoffene fra?</h2>
+            
+            <div class="element-grid">
+                <div class="element-card" style="--el-color: #ff4444;">
+                    <div class="element-symbol">H</div>
+                    <div class="element-name">Hydrogen</div>
+                    <div class="element-source">Big Bang (75%)</div>
+                </div>
+                <div class="element-card" style="--el-color: #ff9900;">
+                    <div class="element-symbol">He</div>
+                    <div class="element-name">Helium</div>
+                    <div class="element-source">Big Bang (25%)</div>
+                </div>
+                <div class="element-card" style="--el-color: #ffcc00;">
+                    <div class="element-symbol">C</div>
+                    <div class="element-name">Karbon</div>
+                    <div class="element-source">Stjerner (fusjon)</div>
+                </div>
+                <div class="element-card" style="--el-color: #88ff00;">
+                    <div class="element-symbol">O</div>
+                    <div class="element-name">Oksygen</div>
+                    <div class="element-source">Stjerner (fusjon)</div>
+                </div>
+                <div class="element-card" style="--el-color: #00ffff;">
+                    <div class="element-symbol">Fe</div>
+                    <div class="element-name">Jern</div>
+                    <div class="element-source">Stjernekjerner</div>
+                </div>
+                <div class="element-card" style="--el-color: #aa44ff;">
+                    <div class="element-symbol">Au</div>
+                    <div class="element-name">Gull</div>
+                    <div class="element-source">Supernovaer / Nøytronstjerner</div>
+                </div>
+            </div>
+            
+            <h2>Fire kilder til grunnstoffer</h2>
+            
+            <div class="box" style="border-left: 4px solid #ff4444;">
+                <h3 style="color: #ff4444;">1. Big Bang (t = 3 min)</h3>
+                <p>Lagde bare de letteste grunnstoffene: <strong>Hydrogen (75%), Helium (25%), spor av Litium og Beryllium</strong>.</p>
+                <p style="color: #888;">Universet var for varmt og ekspanderte for raskt til å lage noe tyngre.</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #ffcc00;">
+                <h3 style="color: #ffcc00;">2. Kjernefusjon i stjerner</h3>
+                <p>Stjerner fusjonerer hydrogen til helium, helium til karbon, og videre opp til <strong>jern (Fe)</strong>.</p>
+                <p style="color: #888;">Fusjon til jern frigjør energi. Fusjon forbi jern krever energi - derfor stopper stjernen her.</p>
+                <p><strong>Grunnstoffer:</strong> C, N, O, Ne, Mg, Si, S, Ca, Fe</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #aa44ff;">
+                <h3 style="color: #aa44ff;">3. Supernovaer (eksploderende stjerner)</h3>
+                <p>Når massive stjerner dør, eksploderer de i en supernova. Den ekstreme energien skaper <strong>alle grunnstoffer tyngre enn jern</strong>.</p>
+                <p><strong>Grunnstoffer:</strong> Cu, Zn, Ag, Au, Pb, U - og mange flere</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #00ffff;">
+                <h3 style="color: #00ffff;">4. Nøytronstjernekollisjoner</h3>
+                <p>Når to nøytronstjerner kolliderer, skapes de tyngste grunnstoffene i enorme mengder.</p>
+                <p style="color: #888;">I 2017 ble dette observert for første gang - og bekreftet at mye av jordens gull kommer herfra!</p>
+            </div>
+            
+            <div class="box box-warning">
+                <h3>💎 Tenk på dette:</h3>
+                <p>Gullringen på fingeren din ble laget i en kollisjon mellom to nøytronstjerner for milliarder av år siden, 
+                kastet ut i verdensrommet, ble en del av solsystemets støvsky, og endte opp på jorden.</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(3)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(5)">Neste: Mørk materie →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 5: MØRK MATERIE OG ENERGI -->
+        <div class="section" id="sec5">
+            <h1>🌑 Mørk materie og mørk energi</h1>
+            
+            <div class="box box-highlight">
+                <h3>Det meste av universet er usynlig!</h3>
+                <p>
+                    Alt vi kan se - stjerner, galakser, planeter, deg selv - utgjør bare <strong>5%</strong> av universet.
+                    Resten er mørk materie og mørk energi.
+                </p>
+            </div>
+            
+            <div class="simulator">
+                <div class="sim-title">🥧 Universets sammensetning</div>
+                <canvas id="pieCanvas" width="400" height="300" style="width: 100%; max-width: 400px; margin: 0 auto; display: block;"></canvas>
+            </div>
+            
+            <h2>Mørk materie (~27%)</h2>
+            <div class="box" style="border-left: 4px solid #6644aa;">
+                <h3 style="color: #8866cc;">Hva vet vi?</h3>
+                <ul>
+                    <li>Har <strong>gravitasjon</strong> - påvirker vanlig materie og lys</li>
+                    <li>Sender ikke ut eller absorberer lys - derfor "mørk"</li>
+                    <li>Holder galakser sammen (de roterer for raskt til å holdes av synlig materie alene)</li>
+                    <li>Påvirker hvordan lys bøyes rundt galaksehoper (gravitasjonslinser)</li>
+                </ul>
+                
+                <h3 style="color: #8866cc; margin-top: 20px;">Hva vet vi ikke?</h3>
+                <ul>
+                    <li>Hva det består av - ingen kjente partikler passer</li>
+                    <li>Om det er én type partikkel eller flere</li>
+                    <li>Hvordan vi kan detektere det direkte</li>
+                </ul>
+            </div>
+            
+            <h2>Mørk energi (~68%)</h2>
+            <div class="box" style="border-left: 4px solid #aa4466;">
+                <h3 style="color: #cc6688;">Hva vet vi?</h3>
+                <ul>
+                    <li>Driver den <strong>akselererende ekspansjonen</strong> av universet</li>
+                    <li>Virker som en "anti-gravitasjon" på kosmisk skala</li>
+                    <li>Oppdaget i 1998 (Nobelpris 2011)</li>
+                </ul>
+                
+                <h3 style="color: #cc6688; margin-top: 20px;">Hva vet vi ikke?</h3>
+                <ul>
+                    <li>Hva det egentlig er - kanskje en egenskap ved selve rommet?</li>
+                    <li>Hvorfor det har akkurat den styrken det har</li>
+                    <li>Om det endrer seg over tid</li>
+                </ul>
+            </div>
+            
+            <div class="box box-success">
+                <h3>🔬 Vitenskapen fortsetter</h3>
+                <p>
+                    Mørk materie og mørk energi er blant de største mysteriene i moderne fysikk.
+                    Forskere over hele verden jobber med å forstå disse fenomenene - 
+                    kanskje vil en av dere finne svaret!
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(4)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(6)">Neste: Flashcards →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 6: FLASHCARDS -->
+        <div class="section" id="sec6">
+            <h1>🃏 Flashcards</h1>
+            
+            <div class="flash-counter" id="flashCounter">Kort 1 av 15</div>
+            
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard" onclick="flipCard()">
+                    <div class="flash-face flash-front">
+                        <div class="flash-label">Spørsmål</div>
+                        <div class="flash-text" id="flashQ">Laster...</div>
+                        <div class="flash-hint">Klikk for å se svaret</div>
+                    </div>
+                    <div class="flash-face flash-back">
+                        <div class="flash-label">Svar</div>
+                        <div class="flash-text" id="flashA">Laster...</div>
+                        <div class="flash-hint">Klikk for å gå tilbake</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flash-controls">
+                <button class="flash-btn" onclick="prevCard()">← Forrige</button>
+                <button class="flash-btn" onclick="shuffleCards()">🔀 Tilfeldig</button>
+                <button class="flash-btn" onclick="nextCard()">Neste →</button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(5)">← Forrige</button>
+                <button class="btn btn-primary" onclick="showSection(7)">Neste: Quiz →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 7: QUIZ -->
+        <div class="section" id="sec7">
+            <h1>❓ Quiz</h1>
+            
+            <div id="quizContainer"></div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" id="checkBtn" onclick="checkQuiz()">Sjekk svarene</button>
+                <button class="btn btn-secondary" id="retryBtn" onclick="resetQuiz()" style="display: none;">Prøv igjen</button>
+            </div>
+            
+            <div class="quiz-result" id="resultBox" style="display: none;">
+                <p>Du fikk:</p>
+                <div class="quiz-score" id="resultScore">0/12</div>
+                <p id="resultMsg"></p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="showSection(6)">← Tilbake</button>
+                <button class="btn btn-primary" onclick="showSection(8)">Neste: Oppgaver →</button>
+            </div>
+        </div>
+        
+        <!-- SEKSJON 8: SKRIVEOPPGAVER -->
+        <div class="section" id="sec8">
+            <h1>📝 Skriveoppgaver</h1>
+            <p>Svar på oppgavene under. Svarene lagres automatisk.</p>
+            
+            <div class="box">
+                <h3>Oppgave 1: Universets tidslinje</h3>
+                <p>Beskriv de viktigste hendelsene i universets historie fra Big Bang til i dag. Inkluder minst 5 hendelser med omtrentlig tidspunkt.</p>
+                <textarea id="oppg1" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 2: Bevisene for Big Bang</h3>
+                <p>Forklar de to hovedbevisene for Big Bang-teorien: kosmisk bakgrunnsstråling (CMB) og rødforskyvning. Hvorfor støtter disse observasjonene teorien?</p>
+                <textarea id="oppg2" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 3: Stjernestøv</h3>
+                <p>"Du er laget av stjernestøv" - forklar hva dette betyr. Hvor kommer de ulike grunnstoffene i kroppen din fra? Beskriv Big Bang, stjerner og supernovaer sin rolle.</p>
+                <textarea id="oppg3" rows="8" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 4: Mørk materie og mørk energi</h3>
+                <p>Hva vet vi om mørk materie og mørk energi? Hva vet vi ikke? Hvor stor andel av universet utgjør de sammenlignet med vanlig materie?</p>
+                <textarea id="oppg4" rows="6" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 5: Hubbles lov og rødforskyvning</h3>
+                <p>Forklar hva Hubbles lov (v = H₀ × d) forteller oss. Hva betyr det at galakser langt unna har større rødforskyvning? Hva sier dette om universets utvikling?</p>
+                <textarea id="oppg5" rows="6" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div class="box">
+                <h3>Oppgave 6: Refleksjon</h3>
+                <p>Hvordan påvirker kunnskapen om universets størrelse, alder og vår plass i det deg? Skriv en kort refleksjon om hva du tenker om dette.</p>
+                <textarea id="oppg6" rows="6" style="width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:8px; padding:12px; margin-top:10px; font-size:1rem;" placeholder="Skriv svaret ditt her..." onchange="saveAnswers()"></textarea>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="downloadAnswers()">📥 Last ned svar</button>
+                <a href="index.html" class="btn btn-primary" style="display: inline-block; text-decoration: none; margin-left: 15px;">✓ Fullfør modul</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // === STARS BACKGROUND ===
+        const starsCanvas = document.getElementById('starsCanvas');
+        const starsCtx = starsCanvas.getContext('2d');
+        
+        function resizeStars() {
+            starsCanvas.width = window.innerWidth;
+            starsCanvas.height = window.innerHeight;
+            drawStars();
+        }
+        
+        function drawStars() {
+            starsCtx.fillStyle = 'transparent';
+            starsCtx.fillRect(0, 0, starsCanvas.width, starsCanvas.height);
+            
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * starsCanvas.width;
+                const y = Math.random() * starsCanvas.height;
+                const r = Math.random() * 1.5;
+                const alpha = Math.random() * 0.8 + 0.2;
+                
+                starsCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                starsCtx.beginPath();
+                starsCtx.arc(x, y, r, 0, Math.PI * 2);
+                starsCtx.fill();
+            }
+        }
+        
+        window.addEventListener('resize', resizeStars);
+        resizeStars();
+        
+        // === NAVIGATION ===
+        let currentSection = 0;
+        function showSection(idx) {
+            document.querySelectorAll('.section').forEach((s, i) => s.classList.toggle('active', i === idx));
+            document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+            currentSection = idx;
+            document.getElementById('progressLabel').textContent = Math.round((idx / 7) * 100) + '%';
+            window.scrollTo(0, 0);
+            
+            if (idx === 2) initCMB();
+            if (idx === 3) initRedshift();
+            if (idx === 5) initPie();
+        }
+        
+        let tick = 0;
+        
+        // === CMB SIMULATION ===
+        function initCMB() {
+            const canvas = document.getElementById('cmbCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            
+            // Generate CMB-like pattern
+            const imageData = ctx.createImageData(W, H);
+            for (let i = 0; i < imageData.data.length; i += 4) {
+                const noise = Math.random() * 30 - 15;
+                const base = 30 + noise;
+                imageData.data[i] = base + Math.random() * 40;     // R
+                imageData.data[i + 1] = base - 10;                  // G
+                imageData.data[i + 2] = 80 + Math.random() * 30;   // B
+                imageData.data[i + 3] = 255;                        // A
+            }
+            ctx.putImageData(imageData, 0, 0);
+            
+            // Add some larger blobs
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * W;
+                const y = Math.random() * H;
+                const r = Math.random() * 30 + 10;
+                const hot = Math.random() > 0.5;
+                
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, r);
+                gradient.addColorStop(0, hot ? 'rgba(255,100,50,0.3)' : 'rgba(50,50,200,0.3)');
+                gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // === REDSHIFT SIMULATION ===
+        let redshiftAnim;
+        function initRedshift() {
+            const canvas = document.getElementById('redshiftCanvas');
+            if (!canvas) return;
+            drawRedshift();
+        }
+        
+        function drawRedshift() {
+            const canvas = document.getElementById('redshiftCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            
+            ctx.fillStyle = '#050510';
+            ctx.fillRect(0, 0, W, H);
+            
+            // Near galaxy (less redshift)
+            ctx.fillStyle = '#4488ff';
+            ctx.beginPath();
+            ctx.arc(150, H/2 - 40, 25, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Near galaxy waves (blue)
+            ctx.strokeStyle = '#4488ff';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) {
+                const x = 200 + i * 25 + (tick % 25);
+                ctx.beginPath();
+                ctx.arc(x, H/2 - 40, 8, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            ctx.fillStyle = '#4488ff';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Nær galakse - lite rødforskyvning', 150, H/2 - 80);
+            
+            // Far galaxy (more redshift)
+            ctx.fillStyle = '#ff4444';
+            ctx.beginPath();
+            ctx.arc(150, H/2 + 60, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Far galaxy waves (red, stretched)
+            ctx.strokeStyle = '#ff4444';
+            for (let i = 0; i < 5; i++) {
+                const x = 200 + i * 45 + (tick % 45);
+                ctx.beginPath();
+                ctx.arc(x, H/2 + 60, 12, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            ctx.fillStyle = '#ff4444';
+            ctx.fillText('Fjern galakse - stor rødforskyvning (bølger strukket)', 150, H/2 + 20);
+            
+            // Arrow showing expansion
+            ctx.fillStyle = '#888';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('→ Rommet ekspanderer → Bølgene strekkes →', W/2, H - 20);
+            
+            tick++;
+            redshiftAnim = requestAnimationFrame(drawRedshift);
+        }
+        
+        // === PIE CHART ===
+        function initPie() {
+            const canvas = document.getElementById('pieCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            const cx = W/2, cy = H/2 - 20, r = 100;
+            
+            ctx.fillStyle = '#050510';
+            ctx.fillRect(0, 0, W, H);
+            
+            // Dark energy - 68%
+            ctx.fillStyle = '#aa4466';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, r, 0, Math.PI * 2 * 0.68);
+            ctx.fill();
+            
+            // Dark matter - 27%
+            ctx.fillStyle = '#6644aa';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, r, Math.PI * 2 * 0.68, Math.PI * 2 * 0.95);
+            ctx.fill();
+            
+            // Normal matter - 5%
+            ctx.fillStyle = '#44cc88';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, r, Math.PI * 2 * 0.95, Math.PI * 2);
+            ctx.fill();
+            
+            // Labels
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            
+            ctx.fillStyle = '#aa4466';
+            ctx.fillText('Mørk energi 68%', cx - 30, cy - 30);
+            
+            ctx.fillStyle = '#6644aa';
+            ctx.fillText('Mørk materie 27%', cx + 70, cy + 60);
+            
+            ctx.fillStyle = '#44cc88';
+            ctx.fillText('Vanlig materie 5%', cx + 80, cy - 70);
+            
+            // Legend
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'left';
+            const ly = H - 40;
+            
+            ctx.fillStyle = '#aa4466';
+            ctx.fillRect(50, ly, 15, 15);
+            ctx.fillStyle = '#fff';
+            ctx.fillText('Mørk energi', 70, ly + 12);
+            
+            ctx.fillStyle = '#6644aa';
+            ctx.fillRect(170, ly, 15, 15);
+            ctx.fillStyle = '#fff';
+            ctx.fillText('Mørk materie', 190, ly + 12);
+            
+            ctx.fillStyle = '#44cc88';
+            ctx.fillRect(300, ly, 15, 15);
+            ctx.fillStyle = '#fff';
+            ctx.fillText('Vanlig materie (deg!)', 320, ly + 12);
+        }
+        
+        // === FLASHCARDS ===
+        const flashcards = [
+            { q: 'Hvor gammelt er universet?', a: '13.8 milliarder år' },
+            { q: 'Hva er CMB?', a: 'Kosmisk bakgrunnsstråling - "ettergløden" fra Big Bang' },
+            { q: 'Hva er temperaturen til CMB?', a: '2.725 K (−270°C)' },
+            { q: 'Hvilke grunnstoffer ble laget i Big Bang?', a: 'Hydrogen (75%) og Helium (25%)' },
+            { q: 'Hvor kommer karbon og oksygen fra?', a: 'Kjernefusjon i stjerner' },
+            { q: 'Hvor kommer gull fra?', a: 'Supernovaer og nøytronstjernekollisjoner' },
+            { q: 'Hva er rødforskyvning?', a: 'Lys strekkes mot rødt når kilden beveger seg bort' },
+            { q: 'Hva beviser rødforskyvning?', a: 'At universet ekspanderer' },
+            { q: 'Hva er Hubbles lov?', a: 'v = H₀ × d (hastighet = konstant × avstand)' },
+            { q: 'Hvor mye er mørk materie?', a: 'Ca. 27% av universet' },
+            { q: 'Hvor mye er mørk energi?', a: 'Ca. 68% av universet' },
+            { q: 'Hvor mye er vanlig materie?', a: 'Bare ca. 5% av universet' },
+            { q: 'Hva gjør mørk materie?', a: 'Gir gravitasjon - holder galakser sammen' },
+            { q: 'Hva gjør mørk energi?', a: 'Driver akselererende ekspansjon av universet' },
+            { q: 'Når ble CMB frigjort?', a: '380 000 år etter Big Bang' }
+        ];
+        
+        let currentCard = 0;
+        
+        function renderCard() {
+            document.getElementById('flashQ').textContent = flashcards[currentCard].q;
+            document.getElementById('flashA').textContent = flashcards[currentCard].a;
+            document.getElementById('flashCounter').textContent = `Kort ${currentCard + 1} av ${flashcards.length}`;
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+        
+        function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+        function nextCard() { currentCard = (currentCard + 1) % flashcards.length; renderCard(); }
+        function prevCard() { currentCard = (currentCard - 1 + flashcards.length) % flashcards.length; renderCard(); }
+        function shuffleCards() { currentCard = Math.floor(Math.random() * flashcards.length); renderCard(); }
+        
+        // === QUIZ ===
+        const quizQuestions = [
+            { q: 'Universets alder?', o: ['4.5 mrd år', '10 mrd år', '13.8 mrd år', '100 mrd år'], c: 2 },
+            { q: 'Hva er CMB?', o: ['En galakse', 'Bakgrunnsstråling', 'En stjerne', 'Et sort hull'], c: 1 },
+            { q: 'CMB-temperatur?', o: ['0 K', '2.7 K', '100 K', '1000 K'], c: 1 },
+            { q: 'Big Bang lagde hvilke grunnstoffer?', o: ['Alle', 'Bare jern', 'H og He', 'Karbon'], c: 2 },
+            { q: 'Tunge grunnstoffer kommer fra?', o: ['Big Bang', 'Stjerner/supernovaer', 'Planeter', 'Sorte hull'], c: 1 },
+            { q: 'Hva viser rødforskyvning?', o: ['Universet krymper', 'Universet ekspanderer', 'Jorden roterer', 'Solen brenner'], c: 1 },
+            { q: 'Hvor mye er mørk energi?', o: ['5%', '27%', '68%', '95%'], c: 2 },
+            { q: 'Hvor mye er vanlig materie?', o: ['5%', '27%', '68%', '95%'], c: 0 },
+            { q: 'Hvem oppdaget universets ekspansjon?', o: ['Einstein', 'Newton', 'Hubble', 'Galileo'], c: 2 },
+            { q: 'Når ble CMB frigjort?', o: ['3 min', '380 000 år', '1 mrd år', '13 mrd år'], c: 1 },
+            { q: 'Hva holder galakser sammen?', o: ['Mørk energi', 'Mørk materie', 'Lys', 'Varme'], c: 1 },
+            { q: 'Hvor kommer gull fra?', o: ['Big Bang', 'Solen', 'Supernovaer', 'Jorden'], c: 2 }
+        ];
+        
+        let quizAnswers = {};
+        let quizChecked = false;
+        
+        function renderQuiz() {
+            document.getElementById('quizContainer').innerHTML = quizQuestions.map((q, qi) => `
+                <div class="quiz-question" id="q${qi}">
+                    <div class="quiz-text"><strong>${qi + 1}.</strong> ${q.q}</div>
+                    <div class="quiz-options">
+                        ${q.o.map((opt, oi) => `<div class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q${qi}o${oi}">${opt}</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function selectAnswer(qi, oi) {
+            if (quizChecked) return;
+            quizAnswers[qi] = oi;
+            quizQuestions[qi].o.forEach((_, i) => {
+                document.getElementById(`q${qi}o${i}`).classList.toggle('selected', i === oi);
+            });
+        }
+        
+        function checkQuiz() {
+            quizChecked = true;
+            let score = 0;
+            quizQuestions.forEach((q, qi) => {
+                const qEl = document.getElementById(`q${qi}`);
+                if (quizAnswers[qi] === q.c) { score++; qEl.classList.add('correct'); }
+                else { qEl.classList.add('wrong'); }
+                document.getElementById(`q${qi}o${q.c}`).classList.add('correct-answer');
+                if (quizAnswers[qi] !== undefined && quizAnswers[qi] !== q.c) {
+                    document.getElementById(`q${qi}o${quizAnswers[qi]}`).classList.add('wrong-answer');
+                }
+            });
+            
+            document.getElementById('resultBox').style.display = 'block';
+            document.getElementById('resultScore').textContent = `${score}/${quizQuestions.length}`;
+            document.getElementById('resultScore').className = 'quiz-score ' + (score >= 10 ? 'good' : score >= 6 ? 'medium' : 'bad');
+            document.getElementById('resultMsg').textContent = score >= 10 ? '🎉 Utmerket!' : score >= 6 ? '👍 Bra!' : '📚 Øv mer!';
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('retryBtn').style.display = 'inline-block';
+            
+            if (score >= 8) localStorage.setItem('naturfag_bb_done', 'true');
+        }
+        
+        function resetQuiz() {
+            quizAnswers = {};
+            quizChecked = false;
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('checkBtn').style.display = 'inline-block';
+            document.getElementById('retryBtn').style.display = 'none';
+            renderQuiz();
+        }
+        
+        // === INIT ===
+        renderCard();
+        renderQuiz();
+        loadAnswers();
+        
+        // === OPPGAVER ===
+        function saveAnswers() {
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('oppg' + i);
+                if (el) localStorage.setItem('bb_oppg' + i, el.value);
+            }
+        }
+        
+        function loadAnswers() {
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('oppg' + i);
+                const saved = localStorage.getItem('bb_oppg' + i);
+                if (el && saved) el.value = saved;
+            }
+        }
+        
+        function downloadAnswers() {
+            const name = localStorage.getItem('naturfag_student') || 'Elev';
+            let text = 'SKRIVEOPPGAVER - MODUL 3: BIG BANG\n';
+            text += 'Navn: ' + name + '\n';
+            text += 'Dato: ' + new Date().toLocaleDateString('no-NO') + '\n';
+            text += '='.repeat(50) + '\n\n';
+            
+            const titles = [
+                'Oppgave 1: Universets tidslinje',
+                'Oppgave 2: Bevisene for Big Bang',
+                'Oppgave 3: Stjernestøv',
+                'Oppgave 4: Mørk materie og mørk energi',
+                'Oppgave 5: Hubbles lov og rødforskyvning',
+                'Oppgave 6: Refleksjon'
+            ];
+            
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('oppg' + i);
+                text += titles[i-1] + '\n' + '-'.repeat(40) + '\n';
+                text += (el ? el.value : '') + '\n\n';
+            }
+            
+            const blob = new Blob([text], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'bigbang-oppgaver-' + name.replace(/\s/g, '_') + '.txt';
+            a.click();
+        }
+    </script>
+</body>
+</html>

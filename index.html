@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VG1 Naturfag - Interaktivt Læringssystem</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0d1f2d 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+        
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(180deg, rgba(0,255,255,0.1) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(0,255,255,0.2);
+        }
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(90deg, #00ffff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        .subtitle { font-size: 1.3rem; color: #888; }
+        
+        .progress-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .progress-bar {
+            height: 12px;
+            background: #1a1a3e;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #00ff88);
+            width: 0%;
+            transition: width 0.5s;
+            border-radius: 6px;
+        }
+        .progress-text { margin-top: 10px; color: #888; font-size: 0.9rem; }
+        
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+        
+        .module-card {
+            background: rgba(255,255,255,0.03);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--module-color);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 5px;
+            background: var(--module-color);
+        }
+        
+        .module-icon {
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .module-number {
+            font-size: 0.8rem;
+            color: var(--module-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        .module-title {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        .module-desc {
+            color: #888;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .module-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .feature-tag {
+            background: rgba(255,255,255,0.08);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        .module-sessions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        /* Module colors */
+        .module-em { --module-color: #ff4444; }
+        .module-rad { --module-color: #ff9900; }
+        .module-bb { --module-color: #00aaff; }
+        .module-klima { --module-color: #44cc88; }
+        
+        .name-input {
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .name-input input {
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            width: 300px;
+            max-width: 100%;
+        }
+        .name-input input:focus {
+            outline: none;
+            border-color: #00ffff;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #555;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔬 VG1 Naturfag</h1>
+        <p class="subtitle">Interaktivt læringssystem med simuleringer, flashcards og quizer</p>
+    </header>
+    
+    <div class="container">
+        <div class="name-input">
+            <label style="display: block; margin-bottom: 15px; color: #888;">Ditt navn (for oppgavebesvarelser):</label>
+            <input type="text" id="studentName" placeholder="Skriv navnet ditt..." onchange="saveName()">
+        </div>
+        
+        <div class="progress-section">
+            <h3>📊 Din fremgang</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="progress-text" id="progressText">0 av 4 moduler fullført</p>
+        </div>
+        
+        <div class="modules-grid">
+            <!-- MODUL 1: EM-STRÅLING -->
+            <a href="modul1-em.html" class="module-card module-em">
+                <div class="module-icon">📡</div>
+                <div class="module-number">Modul 1</div>
+                <h3 class="module-title">Elektromagnetisk stråling</h3>
+                <p class="module-desc">
+                    Utforsk det elektromagnetiske spekteret fra radiobølger til gammastråling. 
+                    Lær forskjellen på ioniserende og ikke-ioniserende stråling.
+                </p>
+                <div class="module-features">
+                    <span class="feature-tag">🌈 Spektrum-simulator</span>
+                    <span class="feature-tag">⚡ Bølgelengde-lab</span>
+                    <span class="feature-tag">📊 Stråledose</span>
+                    <span class="feature-tag">🃏 15 Flashcards</span>
+                    <span class="feature-tag">❓ 12 Quiz-spørsmål</span>
+                    <span class="feature-tag">📝 6 Oppgaver</span>
+                </div>
+                <div class="module-sessions">⏱️ 2 timer (120 min)</div>
+            </a>
+            
+            <!-- MODUL 2: RADIOAKTIVITET -->
+            <a href="modul2-radioaktivitet.html" class="module-card module-rad">
+                <div class="module-icon">☢️</div>
+                <div class="module-number">Modul 2</div>
+                <h3 class="module-title">Radioaktivitet</h3>
+                <p class="module-desc">
+                    Forstå alfa-, beta- og gammastråling gjennom interaktive simuleringer. 
+                    Utforsk halveringstid og lær om radon i norske hjem.
+                </p>
+                <div class="module-features">
+                    <span class="feature-tag">🔴 Alfa-simulator</span>
+                    <span class="feature-tag">🔵 Beta-simulator</span>
+                    <span class="feature-tag">🟣 Gamma-simulator</span>
+                    <span class="feature-tag">⏱️ Halveringstid</span>
+                    <span class="feature-tag">🏠 Radon</span>
+                    <span class="feature-tag">🃏 20 Flashcards</span>
+                    <span class="feature-tag">❓ 15 Quiz-spørsmål</span>
+                    <span class="feature-tag">📝 6 Oppgaver</span>
+                </div>
+                <div class="module-sessions">⏱️ 2 timer (120 min)</div>
+            </a>
+            
+            <!-- MODUL 3: BIG BANG -->
+            <a href="modul3-bigbang.html" class="module-card module-bb">
+                <div class="module-icon">🌌</div>
+                <div class="module-number">Modul 3</div>
+                <h3 class="module-title">Big Bang og universet</h3>
+                <p class="module-desc">
+                    Reis gjennom universets historie fra Big Bang til i dag. 
+                    Utforsk bevisene og lær hvor grunnstoffene kommer fra.
+                </p>
+                <div class="module-features">
+                    <span class="feature-tag">⏰ Tidslinje</span>
+                    <span class="feature-tag">📡 CMB</span>
+                    <span class="feature-tag">🔴 Rødforskyvning</span>
+                    <span class="feature-tag">⭐ Stjernestøv</span>
+                    <span class="feature-tag">🌑 Mørk materie</span>
+                    <span class="feature-tag">🃏 15 Flashcards</span>
+                    <span class="feature-tag">❓ 12 Quiz-spørsmål</span>
+                    <span class="feature-tag">📝 6 Oppgaver</span>
+                </div>
+                <div class="module-sessions">⏱️ 2 timer (120 min)</div>
+            </a>
+            
+            <!-- MODUL 4: KLIMA -->
+            <a href="modul4-klima.html" class="module-card module-klima">
+                <div class="module-icon">🌍</div>
+                <div class="module-number">Modul 4</div>
+                <h3 class="module-title">Klima og klimaendringer</h3>
+                <p class="module-desc">
+                    Forstå drivhuseffekten og klimaendringene. 
+                    Utforsk konsekvensene og hva vi kan gjøre.
+                </p>
+                <div class="module-features">
+                    <span class="feature-tag">🌡️ CO₂-simulator</span>
+                    <span class="feature-tag">💨 Drivhuseffekt</span>
+                    <span class="feature-tag">🌊 Konsekvenser</span>
+                    <span class="feature-tag">💚 Tiltak</span>
+                    <span class="feature-tag">🇳🇴 Norge</span>
+                    <span class="feature-tag">🃏 15 Flashcards</span>
+                    <span class="feature-tag">❓ 12 Quiz-spørsmål</span>
+                    <span class="feature-tag">📝 6 Oppgaver</span>
+                </div>
+                <div class="module-sessions">⏱️ 2 timer (120 min)</div>
+            </a>
+        </div>
+    </div>
+    
+    <footer>
+        <p>VG1 Naturfag - Interaktivt Læringssystem | 65+ Flashcards | 50+ Quiz-spørsmål | 10+ Simuleringer</p>
+    </footer>
+    
+    <script>
+        function saveName() {
+            const name = document.getElementById('studentName').value;
+            localStorage.setItem('naturfag_student', name);
+        }
+        
+        function loadProgress() {
+            const name = localStorage.getItem('naturfag_student') || '';
+            document.getElementById('studentName').value = name;
+            
+            let completed = 0;
+            ['em', 'rad', 'bb', 'klima'].forEach(m => {
+                if (localStorage.getItem(`naturfag_${m}_done`) === 'true') completed++;
+            });
+            
+            document.getElementById('progressFill').style.width = (completed / 4 * 100) + '%';
+            document.getElementById('progressText').textContent = `${completed} av 4 moduler fullført`;
+        }
+        
+        loadProgress();
+    </script>
+</body>
+</html>
